@@ -3,7 +3,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
-import type { StarItem, SyncMetadata, StarData } from '../types/star'
+import type { StarItem, SyncMetadata } from '../types/star'
 import type { ApiItem, AIModuleConfig } from '../types/ai'
 
 export interface GithubTokenInfo {
@@ -40,54 +40,6 @@ export function isTauriAvailable(): boolean {
   return Boolean(w.__TAURI_INTERNALS__ || w.__TAURI__?.invoke || w.__TAURI__?.core)
 }
 
-function readLegacyGithubToken(): GithubTokenInfo | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const legacyToken = localStorage.getItem('github_token')
-  if (!legacyToken) {
-    return null
-  }
-
-  let info: GithubTokenInfo = {
-    token: legacyToken,
-    createdAt: new Date().toISOString(),
-    scopes: [],
-  }
-
-  const legacyInfoStr = localStorage.getItem('github_token_info')
-  if (legacyInfoStr) {
-    try {
-      const parsed = JSON.parse(legacyInfoStr) as Partial<GithubTokenInfo>
-      info = {
-        token: parsed.token || legacyToken,
-        createdAt: parsed.createdAt || info.createdAt,
-        expiresAt: parsed.expiresAt,
-        scopes: parsed.scopes && parsed.scopes.length > 0 ? parsed.scopes : info.scopes,
-        username: parsed.username,
-      }
-    } catch {
-      // ignore parse errors, keep fallback info
-    }
-  }
-
-  return info
-}
-
-function syncLegacyGithubToken(info: GithubTokenInfo | null): void {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  if (info) {
-    localStorage.setItem('github_token', info.token)
-    localStorage.setItem('github_token_info', JSON.stringify(info))
-  } else {
-    localStorage.removeItem('github_token')
-    localStorage.removeItem('github_token_info')
-  }
-}
 
 /**
  * 初始化数据库（由 Rust 端在启动时自动完成）
@@ -96,32 +48,6 @@ export async function initDatabase(): Promise<void> {
   console.log('数据库已由 Rust 端初始化')
 }
 
-/**
- * 从 JSON 数据迁移到 SQLite（保留兼容性）
- */
-export async function migrateFromJson(jsonData: StarData): Promise<void> {
-  if (!isTauriAvailable()) return
-  
-  try {
-    await invoke('save_stars_batch', { stars: jsonData.stars })
-    await invoke('save_metadata', { meta: jsonData.meta })
-    
-    if (jsonData.groups && jsonData.groups.length > 0) {
-      await invoke('save_groups', { groups: jsonData.groups })
-    }
-    
-    if (jsonData.tags && jsonData.tags.length > 0) {
-      await invoke('save_tags', { tags: jsonData.tags })
-    }
-    
-    if (jsonData.groupOrder) {
-      await invoke('save_group_order', { order: jsonData.groupOrder })
-    }
-  } catch (error) {
-    console.error('迁移数据失败:', error)
-    throw error
-  }
-}
 
 /**
  * 加载所有 stars
@@ -437,50 +363,25 @@ export async function saveAIModuleConfigToDb(config: AIModuleConfig): Promise<vo
  */
 
 export async function loadGithubTokenFromDb(): Promise<GithubTokenInfo | null> {
-  const legacyInfo = readLegacyGithubToken()
-
   if (!isTauriAvailable()) {
-    return legacyInfo
+    return null
   }
 
   try {
-    const info = await invoke<GithubTokenInfo | null>('load_github_token')
-    if (info) {
-      syncLegacyGithubToken(info)
-      return info
-    }
-
-    if (legacyInfo) {
-      try {
-        await invoke('save_github_token', { info: legacyInfo })
-      } catch (migrationError) {
-        console.error('迁移旧版 GitHub Token 失败:', migrationError)
-      }
-      syncLegacyGithubToken(legacyInfo)
-      return legacyInfo
-    }
-
-    return null
+    return await invoke<GithubTokenInfo | null>('load_github_token')
   } catch (error) {
     console.error('加载 GitHub Token 失败:', error)
-    if (legacyInfo) {
-      return legacyInfo
-    }
     return null
   }
 }
 
 export async function saveGithubTokenToDb(info: GithubTokenInfo): Promise<void> {
   if (!isTauriAvailable()) {
-    if (typeof window === 'undefined') return
-    localStorage.setItem('github_token_info', JSON.stringify(info))
-    localStorage.setItem('github_token', info.token)
     return
   }
 
   try {
     await invoke('save_github_token', { info })
-    syncLegacyGithubToken(info)
   } catch (error) {
     console.error('保存 GitHub Token 失败:', error)
     throw error
@@ -489,15 +390,11 @@ export async function saveGithubTokenToDb(info: GithubTokenInfo): Promise<void> 
 
 export async function deleteGithubTokenFromDb(): Promise<void> {
   if (!isTauriAvailable()) {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem('github_token_info')
-    localStorage.removeItem('github_token')
     return
   }
 
   try {
     await invoke('delete_github_token')
-    syncLegacyGithubToken(null)
   } catch (error) {
     console.error('删除 GitHub Token 失败:', error)
     throw error

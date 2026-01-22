@@ -35,13 +35,13 @@
 ### 1. 安装依赖
 
 ```bash
-# 安装前端依赖
+# 使用 npm
 npm install
-# 或
+# 或使用 pnpm（推荐）
 pnpm install
 ```
 
-### 2. 首次开发运行
+### 2. 开发模式
 
 ```bash
 npm run tauri:dev
@@ -50,7 +50,7 @@ pnpm tauri:dev
 ```
 
 首次运行会：
-- 下载 Rust 依赖（可能需要几分钟）
+- 下载 Rust 依赖（可能需要几分钟，下载过慢可以尝试使用镜像源或者代理）
 - 编译 Rust 代码
 - 启动开发服务器和 Tauri 窗口
 
@@ -58,9 +58,32 @@ pnpm tauri:dev
 
 ```bash
 npm run tauri:build
+# 或
+pnpm tauri:build
 ```
 
-构建产物位于：`src-tauri/target/release/bundle/`
+构建产物位于 src-tauri/target/release/bundle/
+
+### 4. 构建便携版
+
+```bash
+npm run tauri:build:portable
+# 或
+pnpm tauri:build:portable
+```
+
+便携版产物位于 dist/portable/，可直接分发使用。
+
+### 5. 多语言构建
+
+```bash
+npm run build:multilang
+# 或
+pnpm build:multilang
+```
+
+用于构建多语言安装程序。
+
 
 ## 常见问题
 
@@ -84,8 +107,4 @@ npm run tauri:build
 4. 复制生成的 Token（格式：`ghp_xxxxxxxxxxxx`）
 5. 首次同步时在应用中输入
 
-## 下一步
-
-- 查看 `TECHNICAL_SPEC.md` 了解完整技术文档
-- 查看 `README.md` 了解项目功能
 

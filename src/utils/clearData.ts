@@ -23,19 +23,8 @@ function isTauriAvailable(): boolean {
 export async function clearData(options: ClearOptions): Promise<void> {
   const { starData, apiConfig } = options
 
-  // 浏览器环境：仅能清空本地存储中的星标数据
-  if (typeof window === 'undefined' || !('__TAURI_INTERNALS__' in window)) {
-    if (starData) {
-      localStorage.removeItem('github-star-data')
-    }
-    // 浏览器中没有 API 配置存储，apiConfig 选项在此环境下无效果
-    return
-  }
-
   if (!isTauriAvailable()) {
-    if (starData) {
-      localStorage.removeItem('github-star-data')
-    }
+    console.warn('浏览器环境：无法清空数据')
     return
   }
 

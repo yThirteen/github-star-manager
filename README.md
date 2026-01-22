@@ -18,48 +18,21 @@
 	- “已取消星标”：同步后检测到取消星标的仓库会移动至此
 	- “特别关注”：自定义收藏集
 - ✅ 本地数据持久化：SQLite（Tauri 后端）优先，自动迁移 JSON/localStorage 旧数据
+- ✅ 多语言支持：中文/英文界面切换
+- ✅ 数据管理：支持数据导入/导出/清空，便于备份和迁移
+- ✅ 用户管理：GitHub Token 安全存储与验证，包含详细获取指南
 
 ## 技术栈
 
-- 前端：Vue3 + TypeScript + Vite + Tailwind CSS
+- 前端：Vue3 + TypeScript + Vite + Tailwind CSS + Vue I18n
 - 后端：Tauri 2.9 + Rust（SQLite 数据持久化）
 - 搜索：Fuse.js
 - 存储：SQLite（桌面端）+ JSON/localStorage 回退与迁移
+- 国际化：Vue I18n（支持中文/英文）
 
-## 快速开始
+## 本地部署与运行
 
-### 前置要求
-
-- Node.js 18+（建议配合 pnpm）
-- Rust 1.70+ 与 Cargo
-- Windows 需安装 Visual Studio Build Tools（用于构建 Tauri）
-
-### 安装依赖
-
-```bash
-# 使用 npm
-npm install
-# 或使用 pnpm（推荐）
-
-```
-
-### 开发模式
-
-```bash
-npm run tauri:dev
-# 或
-pnpm tauri:dev
-```
-
-### 构建生产版本
-
-```bash
-npm run tauri:build
-# 或
-pnpm tauri:build
-```
-
-构建产物位于 src-tauri/target/release/bundle/
+详细的本地部署与运行指南请查看 [SETUP.md](./SETUP.md)
 
 ## 使用说明
 
@@ -76,9 +49,8 @@ pnpm tauri:build
 
 ## 数据与存储
 
-- 桌面端优先使用 SQLite（由 Tauri/Rust 后端管理）；
-- 检测到旧版 JSON/localStorage 数据时将自动迁移至 SQLite；
-- 在 SQLite 写入失败时会自动回退至 localStorage 以保障数据不丢失。
+- 桌面端使用 SQLite（由 Tauri/Rust 后端管理）；
+- 在 SQLite 写入失败时会显示错误信息。
 
 ### 便携版与数据目录
 
@@ -106,24 +78,21 @@ github-star-manage/
 
 ## 设置页
 
-- 常规设置：打开链接/删除标签/删除文件夹确认开关；
-- AI API 管理：
+- **常规设置**：打开链接/删除标签/删除文件夹确认开关、语言切换
+- **用户管理**：GitHub Token 安全存储与验证，包含详细的获取指南
+- **AI API 管理**：
 	- 维护多个 API 配置（兼容 OpenAI 风格，如 DeepSeek/硅基流动/ChatGPT 等）；
 	- 为模块分配 API（翻译/自动分类等），并可启用/禁用；
 	- 支持创建、编辑、删除 API 配置。
+- **数据管理**：
+	- 导出数据：支持选择性导出星标数据和/或API配置
+	- 导入数据：从备份文件恢复数据
+	- 清空数据：支持选择性清空星标数据和/或API配置
+- **关于设置**：应用信息、版本号等
 
-## 开发计划（Roadmap）
+## Star History
 
-- [x] 项目初始化与基础页面
-- [x] Rust 后端：GitHub Stars / Release 获取
-- [x] 同步流程（新增/取消星标归档）
-- [x] 分组管理 UI（多级、拖拽、重命名、删除）
-- [x] 标签编辑与筛选 UI
-- [x] 设置页面（常规设置 / AI API 管理）
-- [x] AI：描述翻译、未分类仓库自动分组（含预览/继续分类）
-- [ ] Release 自动后台刷新与提示优化
-- [ ] 更安全的 Token 存储（本地加密/钥匙串）
-- [ ] 多用户配置与备份方案
+[![Star History Chart](https://api.star-history.com/svg?repos=pollinations/pollinations,yThirteen/github-star-manage,github-star-manage/github-star-manage&type=date&legend=top-left)](https://www.star-history.com/#pollinations/pollinations&yThirteen/github-star-manage&github-star-manage/github-star-manage&type=date&legend=top-left)
 
 ## 许可证
 

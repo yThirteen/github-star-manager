@@ -102,21 +102,11 @@ async function loadSelectedData(options: ExportOptions): Promise<any> {
 
   if (options.starData) {
     if (!isTauriAvailable()) {
-      const stored = localStorage.getItem('github-star-data')
-      if (stored) {
-        const parsed = JSON.parse(stored) as StarData
-        result.stars = parsed.stars || []
-        result.meta = parsed.meta || { last_sync: '', total_count: 0, synced_by: '' }
-        result.groups = parsed.groups || []
-        result.tags = parsed.tags || []
-        result.groupOrder = parsed.groupOrder || {}
-      } else {
-        result.stars = []
-        result.meta = { last_sync: '', total_count: 0, synced_by: '' }
-        result.groups = []
-        result.tags = []
-        result.groupOrder = {}
-      }
+      result.stars = []
+      result.meta = { last_sync: '', total_count: 0, synced_by: '' }
+      result.groups = []
+      result.tags = []
+      result.groupOrder = {}
     } else {
       try {
         const [stars, meta, groups, tags, groupOrder] = await Promise.all([
@@ -334,7 +324,7 @@ async function performImport(data: any): Promise<void> {
   if (data.apiConfig && isTauriAvailable()) {
     try {
       console.log('开始导入 API 配置')
-      const { createApiItem, saveModuleConfig } = await import('./aiConfig')
+      const { createApiItem, saveModuleConfig, getAllApiItems } = await import('./aiConfig')
       
       // 导入 API 配置
       if (data.apiConfig.apis && Array.isArray(data.apiConfig.apis)) {
@@ -360,9 +350,20 @@ async function performImport(data: any): Promise<void> {
       // 导入模块配置
       if (data.apiConfig.moduleConfigs && Array.isArray(data.apiConfig.moduleConfigs)) {
         console.log('导入', data.apiConfig.moduleConfigs.length, '个模块配置')
+        
+        // 获取已导入的 API ID 列表，用于验证外键约束
+        const importedApis = await getAllApiItems()
+        const importedApiIds = new Set(importedApis.map((api: any) => api.id))
+        
         for (const config of data.apiConfig.moduleConfigs) {
           try {
-            await saveModuleConfig(config)
+            // 验证 API ID 是否存在，如果不存在则设为 null
+            const validConfig = {
+              ...config,
+              apiId: config.apiId && importedApiIds.has(config.apiId) ? config.apiId : null
+            }
+            
+            await saveModuleConfig(validConfig)
             console.log('模块配置导入成功:', config.module)
           } catch (error) {
             console.error('导入模块配置失败:', config.module, error)
@@ -382,10 +383,7 @@ async function performImport(data: any): Promise<void> {
   // 处理星标数据导入（如果存在）
   if (data.stars) {
     if (!isTauriAvailable()) {
-      // 浏览器环境：保存到 localStorage
-      localStorage.setItem('github-star-data', JSON.stringify(data))
-      // 刷新页面以加载新数据
-      window.location.reload()
+      console.warn('浏览器环境：无法导入星标数据')
       return
     }
 
