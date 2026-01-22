@@ -1,0 +1,4 @@
+# 图标文件将放在这里
+# 使用 tauri-icon 工具生成图标：
+# npx tauri icon path/to/your-icon.png
+

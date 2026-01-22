@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Star Manager</title>
+    <script>
+      // 在页面加载前就应用主题，避免闪烁
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const html = document.documentElement;
+        const body = document.body;
+        
+        let themeToApply = savedTheme;
+        if (!themeToApply && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          themeToApply = 'dark';
+        }
+        
+        if (themeToApply === 'dark') {
+          html.classList.add('dark');
+          // 确保 body 也有 dark 类（当 DOM 加载后）
+          if (body) {
+            body.classList.add('dark');
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+

@@ -1,0 +1,889 @@
+{
+  "common": {
+    "appName": "GitHub 星标管理器",
+    "confirm": "确认",
+    "cancel": "取消",
+    "save": "保存",
+    "close": "关闭",
+    "language": "语言",
+    "light": "亮色模式",
+    "dark": "暗色模式",
+    "create": "创建",
+    "edit": "编辑",
+    "delete": "删除",
+    "dontAskAgain": "不再询问",
+    "open": "打开"
+  },
+  "groups": {
+    "uncategorized": "新增未分类",
+    "unstarred": "已取消星标",
+    "favorites": "特别关注"
+  },
+  "sync": {
+    "button": {
+      "start": "同步 Stars",
+      "loading": "同步中..."
+    },
+    "tokenModal": {
+      "title": "输入 GitHub Token",
+      "placeholder": "ghp_xxxxxxxxxxxx",
+      "confirm": "确认",
+      "verifying": "验证中...",
+      "missingTitle": "缺少 Token",
+      "missingMessage": "请输入 GitHub Token"
+    },
+    "messages": {
+      "successTitle": "同步成功",
+      "successSummary": "同步成功！共 {count} 个活跃仓库",
+      "successNew": "其中 {count} 个新增项目已添加到\"{group}\"文件夹",
+      "successUnstarred": "{count} 个已取消星标的仓库已移动到\"{group}\"文件夹",
+      "failureTitle": "同步失败",
+      "failureMessage": "同步失败: {error}",
+      "unknownError": "未知错误"
+    },
+    "prompts": {
+      "viewChangesTitle": "查看星标变化",
+      "viewChangesMessage": "是否展示两次同步之间的仓库星标变化？",
+      "viewChangesConfirm": "展示",
+      "viewChangesLater": "稍后",
+      "viewChangesDontAsk": "不再提示"
+    }
+  },
+  "status": {
+    "testing": "测试中...",
+    "saving": "保存中...",
+    "exporting": "导出中...",
+    "importing": "导入中...",
+    "clearing": "清除中..."
+  },
+  "modals": {
+    "apiItem": {
+      "title": {
+        "create": "添加 API",
+        "edit": "编辑 API"
+      },
+      "subtitle": "配置 API 的详细信息",
+      "fields": {
+        "apiType": "API 类型",
+        "apiName": "API 名称",
+        "apiKey": "API Key",
+        "apiUrl": "API 地址",
+        "model": "模型",
+        "tags": "用途标签",
+        "description": "描述（可选）"
+      },
+      "apiTypes": {
+        "openai": "OpenAI",
+        "google": "Google 翻译"
+      },
+      "hints": {
+        "apiType": "当前支持兼容 OpenAI 接口规范的 API（ChatGPT、DeepSeek、硅基流动等）以及 Google 翻译。",
+        "name": "为该 API 设置一个易于识别的名称",
+        "apiKey": "输入 API 密钥或 Token",
+        "apiUrl": "输入接口地址",
+        "model": "输入模型名称",
+        "tags": "选择此 API 可提供的功能（可选）",
+        "description": "为此 API 添加备注信息"
+      },
+      "placeholders": {
+        "name": "例如：DeepSeek 私有接口",
+        "apiKey": "例如：sk-... 或其它密钥",
+        "apiUrl": "例如：https://api.deepseek.com/chat/completions",
+        "model": "例如：deepseek-chat",
+        "description": "填写关于此 API 的备注..."
+      },
+      "buttons": {
+        "testTranslate": "🧪 测试翻译 API",
+        "testClassify": "🧪 测试分类 API"
+      },
+      "messages": {
+        "testTranslateSuccess": "✅ 翻译 API 调用成功。{source} -> {result}",
+        "testTranslateFailure": "❌ 翻译 API 调用失败：{error}",
+        "testClassifySuccess": "✅ 分类 API 调用成功",
+        "testClassifyFailure": "❌ 分类 API 调用失败：{error}",
+        "defaultError": "请检查配置后重试。"
+      },
+      "test": {
+        "sampleText": "这是一个 GitHub 星标管理工具。",
+        "sampleDescription": "用于分类测试的示例仓库。",
+        "sampleGroup": "测试分组"
+      },
+      "logs": {
+        "classifyResult": "分类结果："
+      },
+      "errors": {
+        "nameRequired": "请输入 API 名称",
+        "delete": {
+          "title": "删除仓库",
+          "message": "确定要删除 <span class=\"font-semibold\">{name}</span> 吗？",
+          "warning": "该操作无法撤销。",
+          "confirm": "删除"
+        }
+      }
+    },
+    "customApi": {
+      "title": {
+        "create": "添加自定义 API",
+        "edit": "编辑自定义 API"
+      },
+      "subtitle": "填写自定义 API 的配置详情",
+      "fields": {
+        "name": "名称",
+        "apiKey": "API Key",
+        "apiUrl": "API 地址"
+      },
+      "placeholders": {
+        "name": "例如：本地 Ollama",
+        "apiKey": "your-api-key",
+        "apiUrl": "https://api.example.com/v1/chat/completions"
+      },
+      "hints": {
+        "name": "给自定义 API 起一个易于识别的名称",
+        "apiKey": "输入自定义 API 的密钥",
+        "apiUrl": "使用兼容 OpenAI Chat Completions 的地址，如 http://localhost:11434/v1/chat/completions"
+      },
+      "errors": {
+        "required": "请填写必填字段（名称、API Key 和 API 地址）",
+        "invalidUrl": "请输入有效的 API 地址"
+      }
+    }
+  },
+  "dialog": {
+    "alert": {
+      "title": "提示",
+      "confirm": "确定"
+    },
+    "confirm": {
+      "title": "确认",
+      "confirm": "确认",
+      "cancel": "取消",
+      "checkbox": "不再提示"
+    }
+  },
+  "app": {
+    "loading": "加载中..."
+  },
+  "home": {
+    "lastSync": "最后同步: {time}",
+    "switchToDark": "切换到暗色模式",
+    "switchToLight": "切换到亮色模式"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "管理应用设置和偏好",
+    "sections": {
+      "user": {
+        "name": "用户管理",
+        "description": "GitHub Token 管理"
+      },
+      "api": {
+        "name": "API 管理",
+        "description": "管理 API"
+      },
+      "data": {
+        "name": "数据管理",
+        "description": "导入、导出、清空数据"
+      },
+      "general": {
+        "name": "常规设置",
+        "description": "管理默认设置"
+      },
+      "about": {
+        "name": "关于",
+        "description": "应用信息和作者介绍"
+      }
+    },
+   
+    "userManagement": {
+      "token": {
+        "title": "GitHub Token 管理",
+        "subtitle": "（用于同步 GitHub Stars）",
+        "delete": "删除",
+        "deleteTooltip": "删除 Token",
+        "status": {
+          "title": "Token 状态",
+          "token": "Token：",
+          "user": "用户：",
+          "state": "状态：",
+          "valid": "有效",
+          "invalid": "无效",
+          "updateHint": "（请更新 Token）"
+        },
+        "form": {
+          "setTitle": "设置 Token",
+          "updateTitle": "更新 Token",
+          "placeholder": "ghp_xxxxxxxxxxxx",
+          "save": "保存",
+          "update": "更新",
+          "getToken": "获取 Token",
+          "verifying": "验证中...",
+          "saving": "保存中..."
+        }
+      },
+      "guide": {
+        "title": "如何获取 GitHub Token",
+        "intro": {
+          "title": "📌 什么是 GitHub Token？",
+          "body": "GitHub 个人访问令牌是一种安全的身份凭证，可让应用代表你访问 GitHub API。"
+        },
+        "step1": {
+          "title": "步骤 1：打开 GitHub Token 设置页面",
+          "description": "点击下方链接打开设置页面。"
+        },
+        "buttons": {
+          "openSettings": "打开 GitHub Token 设置 →"
+        },
+        "step2": {
+          "title": "步骤 2：生成新的 Token",
+          "items": [
+            "在设置页面点击 <strong>\"Generate new token\"</strong>。",
+            "选择 <strong>\"Generate new token (classic)\"</strong>。"
+          ]
+        },
+        "step3": {
+          "title": "步骤 3：设置名称和权限",
+          "items": {
+            "name": "输入一个易辨识的名称，如 \"GitHub Star Manager\"。",
+            "expiration": "选择一个过期时间（建议 30 天或更长）。",
+            "scopes": {
+              "intro": "勾选以下权限：",
+              "list": [
+                "<code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">public_repo</code> – 访问公共仓库",
+                "<code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">read:user</code> – 读取用户信息（可选）"
+              ]
+            }
+          }
+        },
+        "step4": {
+          "title": "步骤 4：生成并复制 Token",
+          "items": [
+            "滑动到页面底部，点击 <strong>\"Generate token\"</strong>。",
+            "<strong class=\"text-red-600 dark:text-red-400\">重要：</strong> 生成后立即复制 Token（例如 <code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">ghp_xxxxxxxxxxxx</code>）。",
+            "Token 只会显示一次，丢失后需要重新生成。"
+          ]
+        },
+        "step5": {
+          "title": "步骤 5：在应用中保存 Token",
+          "description": "将 Token 粘贴到上方输入框并点击保存。"
+        },
+        "security": {
+          "title": "⚠️ 安全提示",
+          "items": [
+            "像对待密码一样妥善保管 Token，切勿泄露。",
+            "如果 Token 泄露，请立即在 GitHub 上吊销。",
+            "Token 仅保存在本地，不会被上传。"
+          ]
+        }
+      },
+      "dialogs": {
+        "delete": {
+          "title": "⚠️ 删除 Token",
+          "intro": "确定要删除 GitHub Token 吗？",
+          "warning": "删除后将无法继续同步星标。",
+          "note": "如需继续同步，请重新设置新的 Token。",
+          "confirm": "删除 Token"
+        }
+      }
+    },
+    "apiManagement": {
+      "title": "API 管理",
+      "subtitle": "管理所有 API 配置并分配到功能模块",
+      "moduleConfig": {
+        "title": "模块配置",
+        "subtitle": "为每个功能模块分配 API",
+        "add": "添加 API"
+      },
+      "selectLabel": "选择 API",
+      "optionNone": "未配置",
+      "status": {
+        "enabled": "已启用",
+        "disabled": "已禁用",
+        "selectFirst": "请先选择 API"
+      },
+      "help": {
+        "tooltip": "查看 API 使用说明",
+        "title": "API 使用说明",
+        "button": "我知道了",
+        "steps": [
+          "1）创建 API：点击“添加 API”，填写名称、类型和凭证信息。",
+          "2）分配模块：在各模块的下拉框中选择可用 API，不兼容的选项会自动隐藏。",
+          "3）启用模块：选择 API 后再开启右侧开关即可启用该模块。",
+          "4）删除提醒：删除正在使用的 API 会使相关模块自动禁用，请提前确认。"
+        ]
+      },
+      "dialogs": {
+        "delete": {
+          "title": "删除 API",
+          "message": "确定要删除 API \"{name}\" 吗？",
+          "messageWithUsage": "确定要删除 API \"{name}\" 吗？它正在被以下模块使用：{modules}。删除后这些模块将被禁用。",
+          "confirm": "删除"
+        }
+      },
+      "listSeparator": "、",
+      "modules": {
+        "translate": {
+          "name": "翻译 API",
+          "description": "用于翻译仓库描述"
+        },
+        "classify": {
+          "name": "分类 API",
+          "description": "用于 AI 分类仓库"
+        },
+        "chat": {
+          "name": "对话 API",
+          "description": "用于 AI 对话功能（预留功能）"
+        }
+      }
+    },
+    "dataManagement": {
+      "title": "数据管理",
+      "subtitle": "导入导出备份",
+      "sections": {
+        "export": {
+          "title": "导出数据",
+          "description": "导出全部数据为 JSON 文件，方便备份或迁移",
+          "button": "📤 导出"
+        },
+        "import": {
+          "title": "导入数据",
+          "description": "从 JSON 备份文件导入数据（会覆盖当前数据）",
+          "button": "📥 导入"
+        },
+        "clear": {
+          "title": "清空所有数据",
+          "description": "永久删除所有仓库、标签、文件夹和元数据（不可恢复）",
+          "button": "🗑️ 清空"
+        }
+      },
+      "dialogs": {
+        "exportSelect": {
+          "title": "选择要导出的内容",
+          "subtitle": "请勾选需要导出的数据类型",
+          "options": {
+            "starData": {
+              "title": "星标仓库、分组及元信息",
+              "desc": "包括所有已同步的仓库、标签、文件夹/分组，以及同步元数据和分组排序信息。"
+            },
+            "apiConfig": {
+              "title": "API 配置与模块绑定",
+              "desc": "包括所有已保存的 API 凭据与配置，以及各模块与 API 的绑定启用状态。"
+            }
+          },
+          "needSelect": "请至少选择一项要导出的内容。",
+          "confirm": "确认导出"
+        },
+        "clearFirst": {
+          "title": "⚠️ 警告：这将删除所有数据！",
+          "intro": "以下内容将被删除：",
+          "items": [
+            "所有已同步仓库",
+            "所有标签",
+            "所有文件夹",
+            "所有元数据"
+          ],
+          "warning": "此操作不可撤销。",
+          "question": "是否继续？",
+          "confirm": "继续"
+        },
+        "clearSelect": {
+          "title": "选择要清空的内容",
+          "subtitle": "操作不可撤销，请谨慎勾选",
+          "options": {
+            "starData": {
+              "title": "星标仓库、分组及元信息",
+              "desc": "包括所有已同步的仓库、标签、文件夹/分组，以及同步元数据和分组排序信息。"
+            },
+            "apiConfig": {
+              "title": "API 配置与模块绑定",
+              "desc": "包括所有已保存的 API 凭据与配置，以及各模块与 API 的绑定启用状态。"
+            }
+          },
+          "warningTitle": "⚠️ 风险提示",
+          "warningDesc": "清空后无法恢复，必要信息请先导出备份。",
+          "needSelect": "请至少选择一项要清空的内容。",
+          "confirm": "确认清空"
+        },
+        "clearSecond": {
+          "title": "⚠️ 确认清空",
+          "message": "确定要清空所有数据吗？",
+          "warning": "这将删除应用中的全部内容！",
+          "confirm": "确认清空"
+        },
+        "importConfirm": {
+          "title": "⚠️ 确认导入数据",
+          "intro": "确定导入所选数据吗？",
+          "warning": "该操作会覆盖当前所有数据。",
+          "previewTitle": "导入概要：",
+          "preview": {
+            "stars": "{count} 个仓库",
+            "groups": "{count} 个文件夹",
+            "tags": "{count} 个标签"
+          },
+          "confirm": "导入"
+        }
+      },
+      "alerts": {
+        "exportSuccess": "数据导出成功！",
+        "exportFailed": "导出失败：{error}",
+        "selectFileFailed": "选择文件失败：{error}",
+        "importSuccess": "数据导入成功！",
+        "importFailed": "导入失败：{error}",
+        "clearSuccess": "数据已全部清空！",
+        "clearFailed": "清空数据失败：{error}",
+        "unknownError": "未知错误"
+      }
+    },
+    "general": {
+      "title": "常规设置",
+      "subtitle": "管理默认设置和确认对话框",
+      "language": {
+        "title": "界面语言",
+        "description": "选择应用的显示语言",
+        "options": {
+          "zh-CN": "简体中文",
+          "en": "英语"
+        }
+      },
+      "languageOptions": {
+        "zh-CN": "简体中文",
+        "en": "英语"
+      },
+      "items": {
+        "linkConfirm": {
+          "title": "打开链接时显示确认对话框",
+          "description": "点击仓库名称打开链接时是否显示确认提示"
+        },
+        "tagDelete": {
+          "title": "删除标签时显示确认对话框",
+          "description": "删除标签时是否显示确认提示"
+        },
+        "groupDelete": {
+          "title": "删除文件夹时显示确认对话框",
+          "description": "删除文件夹时是否显示确认提示"
+        },
+        "starDeltaPrompt": {
+          "title": "同步后询问是否展示星标变化",
+          "description": "二次同步后是否弹出提示框询问是否展示星标增减详情"
+        },
+        "starDeltaAuto": {
+          "title": "自动展示星标变化",
+          "description": "跳过提示后是否直接按星标变化排序展示结果"
+        },
+        "maxFolderDepth": {
+          "title": "最大文件夹层级",
+          "description": "限制分组嵌套的最大层级，避免层级过深导致查找困难",
+          "unit": "层"
+        }
+      }
+    },
+     "about": {
+      "title": "关于应用",
+      "subtitle": "应用信息与技术栈",
+      "description": "一款优雅的 GitHub 星标管理工具，帮助你更好地组织和发现优秀的开源项目。",
+      "author": {
+        "title": "作者信息",
+        "role": "开源开发者",
+        "description": "我们致力于开发高质量的开源工具，帮助开发者提升工作效率。如果你喜欢这个项目，欢迎给我们一个 Star！",
+        "github": "GitHub",
+        "email": "联系我们"
+      },
+      "technology": {
+        "title": "技术栈"
+      },
+      "license": {
+        "title": "开源许可证",
+        "description": "本项目采用 MIT 开源许可证，允许自由使用、修改和分发。"
+      },
+      "acknowledgments": {
+        "title": "致谢",
+        "description": "感谢所有为开源社区做出贡献的开发者们，以及所有使用和反馈本项目的用户。"
+      }
+    }
+  },
+  "groupList": {
+    "title": "文件夹",
+    "actions": {
+      "createGroup": "新建文件夹"
+    },
+    "defaults": {
+      "newFolder": "新文件夹"
+    },
+    "buttons": {
+      "all": "全部",
+      "favorites": "特别关注",
+      "uncategorized": "新增未分类",
+      "unstarred": "已取消星标"
+    },
+    "labels": {
+      "languageTags": "语言标签",
+      "customTags": "自建标签"
+    },
+    "language": {
+      "toggleCollapse": "收起",
+      "toggleExpand": "展开 ({count} 个)"
+    },
+    "tooltips": {
+      "expand": "展开",
+      "collapse": "折叠",
+      "deleteTag": "删除标签"
+    },
+    "forms": {
+      "groupNamePlaceholder": "输入分组名称",
+      "childGroupNamePlaceholder": "输入子分组名称",
+      "createChildUnder": "在 \"{name}\" 下创建子分组"
+    },
+    "dialogs": {
+      "deleteTag": {
+        "title": "删除标签",
+        "withUsage": "确定要删除标签 <span class=\"font-semibold\">{tag}</span> 吗？<br>该标签已被 <span class=\"font-semibold\">{count}</span> 个仓库使用，它们将被移除此标签。",
+        "confirm": "确定要删除标签 <span class=\"font-semibold\">{tag}</span> 吗？"
+      },
+      "deleteGroup": {
+        "title": "删除分组",
+        "withUsage": "确定要删除分组 <span class=\"font-semibold\">{group}</span> 吗？<br>该分组中有 <span class=\"font-semibold\">{count}</span> 个项目，它们将被移除此分组。",
+        "confirm": "确定要删除分组 <span class=\"font-semibold\">{group}</span> 吗？"
+      }
+    },
+    "context": {
+      "createFolder": "新建文件夹",
+      "rename": "重命名",
+      "systemGroupDisabled": "系统文件夹不支持此操作"
+    },
+    "settings": "设置"
+  },
+  "starList": {
+    "common": {
+      "untitled": "未命名",
+      "listSeparator": "、"
+    },
+    "overlay": {
+      "folderAggregating": "文件夹聚合中...",
+      "classifying": "AI 分类进行中...",
+      "folderAggregationStatus": "正在聚合 {count} 个文件夹",
+      "progress": "进度：{current} / {total}",
+      "cancel": "取消分类"
+    },
+    "stats": {
+      "childFolders": "{count} 个子文件夹",
+      "repositories": "{count} 个仓库",
+      "repositoriesZero": "共 0 个仓库"
+    },
+    "sort": {
+      "label": "排序",
+      "modeTooltip": "排序方式",
+      "toggleTooltip": "切换排序方向",
+      "options": {
+        "default": "默认排序",
+        "starDelta": "按星标增长",
+        "starCount": "按星标数",
+        "starredAt": "按收藏时间"
+      }
+    },
+    "ai": {
+      "tooltips": {
+        "accept": "接收选中的分类结果",
+        "preview": "预览分组层级与仓库数量",
+        "running": "分类进行中...",
+        "start": "开始 AI 分类",
+        "refine": "对当前结果进行文件夹归纳",
+        "cancelPreview": "取消预览",
+        "toggleAll": "全选/取消全选所有预览结果"
+      },
+      "buttons": {
+        "accept": "接收 ({count})",
+        "preview": "文件夹预览",
+        "start": "AI 分类",
+        "refine": "继续分类",
+        "selectAll": "全选",
+        "deselectAll": "取消全选"
+      },
+      "config": {
+        "title": "AI 自动分类确认",
+        "subtitle": "将对 {count} 个未分类仓库进行处理",
+        "close": "关闭配置",
+        "notice": "注意：此操作需要配置 OpenAI API 兼容的 AI API（如 DeepSeek、硅基流动、ChatGPT 等）。",
+        "fields": {
+          "concurrency": {
+            "label": "并发数",
+            "placeholder": "例如：6",
+            "hint": "并发越高速度越快，但成本和限流风险也更高，建议 3-8。"
+          }
+        },
+        "instructions": {
+          "description": "建议先在左侧创建好目标文件夹，再执行自动分类，可以优化分类结果。",
+          "oneClick": "一键创建"
+        },
+        "recommend": {
+          "title": "推荐创建",
+          "empty": "暂无推荐文件夹",
+          "remove": "移除推荐文件夹",
+          "placeholder": "添加自定义文件夹（支持多级路径，如 工具/编程工具）",
+          "add": "添加",
+          "defaults": [
+            "工具",
+            "资源",
+            "学习",
+            "框架",
+            "AI",
+            "其他"
+          ]
+        },
+        "confirm": "继续分类"
+      },
+      "alerts": {
+        "noFolders": {
+          "title": "无需创建",
+          "message": "没有可创建的文件夹。"
+        },
+        "createSummary": {
+          "title": "文件夹创建结果",
+          "created": "新建 {count} 个文件夹。",
+          "createdWithList": "新建 {count} 个文件夹（{list}）。",
+          "skipped": "跳过 {count} 个文件夹（已存在）。",
+          "skippedWithList": "跳过 {count} 个文件夹（{list}，已存在）。",
+          "failedWithList": "失败 {count} 个文件夹（{list}）。"
+        },
+        "noResult": {
+          "title": "分类失败",
+          "message": "没有成功分类任何仓库，请检查 API 配置。"
+        },
+        "preview": {
+          "title": "分类预览",
+          "message": "已生成 {count} 个仓库的分类预览。",
+          "refineHint": "可以点击“继续分类”优化分组结构。",
+          "acceptHint": "点击“接收”按钮应用分类结果。"
+        },
+        "error": {
+          "title": "分类失败",
+          "message": "分类失败：{error}"
+        },
+        "cancelled": {
+          "title": "已取消",
+          "message": "已取消 AI 分类。"
+        },
+        "limitReached": {
+          "title": "分类已结束",
+          "message": "{reason} 当前一级文件夹：{count} 个。"
+        },
+        "optimizeDone": {
+          "title": "优化完成",
+          "message": "文件夹分类完成，已生成层级结构。",
+          "reminder": "仍保留较多一级文件夹，可再次点击继续分类。"
+        },
+        "optimizeFailed": {
+          "title": "优化失败",
+          "message": "优化分类失败：{error}"
+        },
+        "applyMixed": {
+          "title": "分类完成",
+          "message": "分类完成！成功 {success} 个，失败 {failed} 个。"
+        },
+        "applySuccess": {
+          "title": "分类成功",
+          "message": "成功分类 {count} 个仓库！"
+        },
+        "applyFailed": {
+          "title": "应用失败",
+          "message": "应用分类结果失败：{error}"
+        },
+        "noSelection": {
+          "title": "未选择分类结果",
+          "message": "请至少选择一个分类结果进行接收。"
+        }
+      },
+      "prompts": {
+        "excessGroups": {
+          "title": "分组数量过多",
+          "message": "生成了 {count} 个一级分组，是否进行文件夹归纳？",
+          "confirm": "确认",
+          "cancel": "先预览"
+        },
+        "refineMore": {
+          "title": "一级文件夹过多",
+          "message": "优化后仍有 {count} 个一级文件夹，是否继续尝试归纳？",
+          "confirm": "继续分类",
+          "cancel": "先预览"
+        }
+      },
+      "errors": {
+        "generic": "分类失败",
+        "limitReached": "已达到最大文件夹分类次数限制",
+        "optimizeFailed": "优化分类失败",
+        "applyFailed": "应用分类结果失败"
+      }
+    },
+    "selection": {
+      "summary": "已选中 {count} 个仓库",
+      "selectAllCurrent": "全选当前页",
+      "clear": "取消选择",
+      "checkboxAria": "选择仓库 {name}",
+      "previewCheckboxAria": "选择预览分类结果 {name}"
+    },
+    "move": {
+      "selectTarget": "选择目标文件夹",
+      "collapseChildren": "收起子文件夹",
+      "expandChildren": "展开子文件夹",
+      "selected": "已选",
+      "empty": "暂无可用文件夹",
+      "confirm": "移动",
+      "dialogs": {
+        "selectTarget": {
+          "title": "请选择目标",
+          "message": "请先选择要移动到的文件夹。"
+        }
+      },
+      "summary": {
+        "title": "移动完成",
+        "moved": "成功移动 {count} 个仓库。",
+        "skipped": "跳过 {count} 个仓库（已在目标文件夹中或数据缺失）。",
+        "errorTitle": "移动失败",
+        "errorMessage": "批量移动失败"
+      }
+    },
+    "empty": {
+      "title": "还没有同步任何 Stars",
+      "action": "点击上方同步按钮开始吧！"
+    },
+    "search": {
+      "noResults": "未找到匹配的仓库"
+    },
+    "childGroup": {
+      "count": "{count} 个仓库"
+    },
+    "pagination": {
+      "pageStatus": "第 {current} / {total} 页",
+      "first": "第一页",
+      "previous": "上一页",
+      "next": "下一页",
+      "last": "最后一页",
+      "perPageTitle": "每页数量",
+      "perPageOption": "每页 {count}",
+      "scrollToTop": "回到顶部"
+    },
+    "preview": {
+      "title": "文件夹预览",
+      "subtitle": "基于当前 AI 分类预览结果",
+      "close": "关闭预览",
+      "total": "共 {count} 个仓库",
+      "levelCount": "{level} 级文件夹 {count} 个",
+      "structure": "层级结构（包含各层仓库总数）",
+      "empty": "暂无文件夹数据",
+      "nodeCount": "{count} 个仓库"
+    },
+    "groups": {
+      "favorites": "特别关注",
+      "alerts": {
+        "createFailed": {
+          "title": "创建分组失败",
+          "message": "创建分组失败"
+        }
+      },
+      "prompt": {
+        "create": "请输入分组名称:"
+      }
+    },
+    "unstarred": {
+      "clearTooltip": "清空已取消星标文件夹",
+      "clearButton": "清空 ({count})",
+      "dialog": {
+        "title": "清空\"已取消星标\"文件夹",
+        "message": "确定要清空\"已取消星标\"文件夹吗？",
+        "warning": "将删除 {count} 个仓库，此操作不可恢复！",
+        "confirm": "确认清空"
+      },
+      "alerts": {
+        "clearFailed": {
+          "title": "清空失败",
+          "message": "清空失败"
+        }
+      }
+    },
+    "tags": {
+      "alerts": {
+        "addFailed": {
+          "title": "添加标签失败",
+          "message": "添加标签失败"
+        }
+      }
+    },
+    "stars": {
+      "alerts": {
+        "deleteFailed": {
+          "title": "删除仓库失败",
+          "message": "删除仓库失败"
+        }
+      }
+    }
+  },
+  "starCard": {
+    "groups": {
+      "move": "移动到文件夹",
+      "noGroup": "移出文件夹",
+      "placeholder": "选择文件夹",
+      "create": "新建文件夹",
+      "empty": "暂无可用文件夹",
+      "alreadyJoined": "已添加"
+    },
+    "labels": {
+      "lastPush": "最近推送",
+      "previewBadge": "(预览)",
+      "expand": "展开",
+      "collapse": "收起",
+      "selectTags": "选择标签："
+    },
+    "actions": {
+      "translate": "翻译",
+      "copyTranslation": "复制翻译",
+      "retranslate": "重新翻译",
+      "cancelTranslate": "取消翻译",
+      "addNote": "添加笔记",
+      "addTag": "添加标签",
+      "addToGroup": "添加到分组",
+      "deleteTag": "删除标签",
+      "deleteRepo": "删除仓库"
+    },
+    "placeholders": {
+      "note": "添加笔记...",
+      "tagInput": "输入标签名，回车创建"
+    },
+    "tooltips": {
+      "translateToAppLanguage": "翻译为应用语言",
+      "filterOn": "点击筛选",
+      "filterOff": "点击取消筛选",
+      "removeGroup": "从仓库中移除分组",
+      "removeSpecial": "从特别关注中移出仓库",
+      "expandChildren": "展开子分组",
+      "collapseChildren": "收起子分组",
+      "selectChild": "请选择子文件夹",
+      "alreadyJoined": "已加入",
+      "alreadyInSpecial": "已加入特别关注",
+      "addToSpecial": "添加到特别关注",
+      "addToGroup": "添加到该分组",
+      "previewGroup": "预览：AI 建议的分组（点击接收按钮应用）",
+      "toggleTagCompact": "切换到紧凑模式",
+      "toggleTagGroup": "切换到分组模式"
+    },
+    "status": {
+      "translating": "翻译中..."
+    },
+    "notes": {
+      "noteShortcuts": "Ctrl+Enter 保存 • Esc 取消 • 点击外部保存"
+    },
+    "dialogs": {
+      "openLink": {
+        "title": "打开链接",
+        "message": "是否在浏览器中打开此仓库？"
+      },
+      "delete": {
+        "title": "删除仓库",
+        "message": "确定要删除 <span class=\"font-semibold\">{name}</span> 吗？",
+        "warning": "该操作无法撤销。",
+        "confirm": "删除"
+      },
+      "removeGroup": {
+        "title": "移出文件夹",
+        "message": "确定将此仓库从 <span class=\"font-semibold\">{group}</span> 文件夹中移出？"
+      }
+    }
+  }
+}

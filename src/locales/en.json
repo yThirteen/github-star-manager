@@ -1,0 +1,889 @@
+{
+  "common": {
+    "appName": "GitHub Star Manager",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "language": "Language",
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "dontAskAgain": "Don't ask again",
+    "open": "Open"
+  },
+  "groups": {
+    "uncategorized": "New Uncategorized",
+    "unstarred": "Unstarred",
+    "favorites": "Favorites"
+  },
+  "sync": {
+    "button": {
+      "start": "Sync Stars",
+      "loading": "Syncing..."
+    },
+    "tokenModal": {
+      "title": "Enter GitHub Token",
+      "placeholder": "ghp_xxxxxxxxxxxx",
+      "confirm": "Confirm",
+      "verifying": "Verifying...",
+      "missingTitle": "Missing Token",
+      "missingMessage": "Please enter a GitHub Token"
+    },
+    "messages": {
+      "successTitle": "Sync Complete",
+      "successSummary": "Sync succeeded! {count} active repositories in total",
+      "successNew": "{count} new repositories were added to \"{group}\"",
+      "successUnstarred": "{count} repositories were moved to \"{group}\" after being unstarred",
+      "failureTitle": "Sync Failed",
+      "failureMessage": "Sync failed: {error}",
+      "unknownError": "Unknown error"
+    },
+    "prompts": {
+      "viewChangesTitle": "View Star Changes",
+      "viewChangesMessage": "Show the star changes between the two syncs?",
+      "viewChangesConfirm": "Show",
+      "viewChangesLater": "Later",
+      "viewChangesDontAsk": "Don't ask again"
+    }
+  },
+  "status": {
+    "testing": "Testing...",
+    "saving": "Saving...",
+    "exporting": "Exporting...",
+    "importing": "Importing...",
+    "clearing": "Clearing..."
+  },
+  "modals": {
+    "apiItem": {
+      "title": {
+        "create": "Add API",
+        "edit": "Edit API"
+      },
+      "subtitle": "Configure the API details",
+      "fields": {
+        "apiType": "API Type",
+        "apiName": "API Name",
+        "apiKey": "API Key",
+        "apiUrl": "API URL",
+        "model": "Model",
+        "tags": "Usage tags",
+        "description": "Description (optional)"
+      },
+      "apiTypes": {
+        "openai": "OpenAI",
+        "google": "Google Translate"
+      },
+      "hints": {
+        "apiType": "Currently supports APIs following the OpenAI interface (ChatGPT, DeepSeek, SiliconFlow) and Google Translate.",
+        "name": "Give this API a recognizable name",
+        "apiKey": "Enter the API key or token",
+        "apiUrl": "Enter the endpoint URL",
+        "model": "Enter the model name",
+        "tags": "Select the features this API can power (optional)",
+        "description": "Add notes about this API"
+      },
+      "placeholders": {
+        "name": "e.g. My DeepSeek API",
+        "apiKey": "e.g. sk-... or another API key",
+        "apiUrl": "e.g. https://api.deepseek.com/chat/completions",
+        "model": "e.g. deepseek-chat",
+        "description": "Add any notes about this API..."
+      },
+      "buttons": {
+        "testTranslate": "🧪 Test translation API",
+        "testClassify": "🧪 Test classification API"
+      },
+      "messages": {
+        "testTranslateSuccess": "✅ Translation API call succeeded. {source} -> {result}",
+        "testTranslateFailure": "❌ Translation API call failed: {error}",
+        "testClassifySuccess": "✅ Classification API call succeeded",
+        "testClassifyFailure": "❌ Classification API call failed: {error}",
+        "defaultError": "Please check the configuration and try again."
+      },
+      "test": {
+        "sampleText": "This is a GitHub star management tool.",
+        "sampleDescription": "A sample repository used for testing classification.",
+        "sampleGroup": "Test group"
+      },
+      "logs": {
+        "classifyResult": "Classification result:"
+      },
+      "errors": {
+        "nameRequired": "Please enter an API name",
+        "delete": {
+          "title": "Delete repository",
+          "message": "Delete <span class=\"font-semibold\">{name}</span>?",
+          "warning": "This action cannot be undone.",
+          "confirm": "Delete"
+        }
+      }
+    },
+    "customApi": {
+      "title": {
+        "create": "Add custom API",
+        "edit": "Edit custom API"
+      },
+      "subtitle": "Enter the configuration details for your custom API",
+      "fields": {
+        "name": "Name",
+        "apiKey": "API Key",
+        "apiUrl": "API URL"
+      },
+      "placeholders": {
+        "name": "e.g. Ollama local model",
+        "apiKey": "your-api-key",
+        "apiUrl": "https://api.example.com/v1/chat/completions"
+      },
+      "hints": {
+        "name": "Give this custom API a recognizable name",
+        "apiKey": "Enter your custom API key",
+        "apiUrl": "Use an endpoint compatible with OpenAI Chat Completions, e.g. http://localhost:11434/v1/chat/completions"
+      },
+      "errors": {
+        "required": "Please fill out the required fields (name, API key, and API URL)",
+        "invalidUrl": "Enter a valid API URL"
+      }
+    }
+  },
+  "dialog": {
+    "alert": {
+      "title": "Notice",
+      "confirm": "OK"
+    },
+    "confirm": {
+      "title": "Confirm",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "checkbox": "Don't ask again"
+    }
+  },
+  "app": {
+    "loading": "Loading..."
+  },
+  "home": {
+    "lastSync": "Last synced: {time}",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage app preferences",
+    "sections": {
+      "user": {
+        "name": "User Management",
+        "description": "GitHub token settings"
+      },
+      "api": {
+        "name": "API Management",
+        "description": "Manage AI APIs"
+      },
+      "data": {
+        "name": "Data Management",
+        "description": "Import, export, clear data"
+      },
+      "general": {
+        "name": "General Settings",
+        "description": "Default behaviors"
+      },
+      "about": {
+        "name": "About",
+        "description": "App info and author"
+      }
+    },
+    "userManagement": {
+      "token": {
+        "title": "GitHub Token Management",
+        "subtitle": "(used to sync GitHub Stars)",
+        "delete": "Delete",
+        "deleteTooltip": "Delete token",
+        "status": {
+          "title": "Token status",
+          "token": "Token:",
+          "user": "User:",
+          "state": "Status:",
+          "valid": "Valid",
+          "invalid": "Invalid",
+          "updateHint": "(Please update the token)"
+        },
+        "form": {
+          "setTitle": "Set token",
+          "updateTitle": "Update token",
+          "placeholder": "ghp_xxxxxxxxxxxx",
+          "save": "Save",
+          "update": "Update",
+          "getToken": "Get token",
+          "verifying": "Verifying...",
+          "saving": "Saving..."
+        }
+      },
+      "guide": {
+        "title": "How to get a GitHub token",
+        "intro": {
+          "title": "What is a GitHub token?",
+          "body": "A GitHub personal access token is a secure way to authenticate yourself so apps can access the GitHub API on your behalf."
+        },
+        "step1": {
+          "title": "Step 1: Visit the GitHub token settings page",
+          "description": "Click the link below to open the settings page."
+        },
+        "buttons": {
+          "openSettings": "Open GitHub token settings"
+        },
+        "step2": {
+          "title": "Step 2: Generate a new token",
+          "items": [
+            "Click <strong>\"Generate new token\"</strong> on the settings page.",
+            "Choose <strong>\"Generate new token (classic)\"</strong>."
+          ]
+        },
+        "step3": {
+          "title": "Step 3: Set the token name and permissions",
+          "items": {
+            "name": "Enter a descriptive name, such as \"GitHub Star Manager\".",
+            "expiration": "Choose an expiration time (30 days or longer is recommended).",
+            "scopes": {
+              "intro": "Select these scopes:",
+              "list": [
+                "<code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">public_repo</code> - access public repositories",
+                "<code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">read:user</code> - read user information (optional)"
+              ]
+            }
+          }
+        },
+        "step4": {
+          "title": "Step 4: Generate and copy the token",
+          "items": [
+            "Scroll to the bottom and click <strong>\"Generate token\"</strong>.",
+            "<strong class=\"text-red-600 dark:text-red-400\">Important:</strong> copy the generated token immediately (e.g. <code class=\"bg-gray-100 dark:bg-gray-700 px-1 rounded\">ghp_xxxxxxxxxxxx</code>).",
+            "The token is shown only once; regenerate it if you lose it."
+          ]
+        },
+        "step5": {
+          "title": "Step 5: Save the token in this app",
+          "description": "Paste the token into the input above and click Save."
+        },
+        "security": {
+          "title": "Security tips",
+          "items": [
+            "Treat the token like a password - do not share it.",
+            "Revoke the token on GitHub immediately if it leaks.",
+            "Tokens are stored locally and never uploaded."
+          ]
+        }
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Delete token",
+          "intro": "Delete the GitHub token?",
+          "warning": "You will be unable to sync GitHub stars.",
+          "note": "Set a new token if you want to keep syncing data.",
+          "confirm": "Delete token"
+        }
+      }
+    },
+    "apiManagement": {
+      "title": "API Management",
+      "subtitle": "Manage all API configs and assign them to modules",
+      "moduleConfig": {
+        "title": "Module configuration",
+        "subtitle": "Assign an API to each feature module",
+        "add": "Add API"
+      },
+      "selectLabel": "Select API",
+      "optionNone": "Not configured",
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "selectFirst": "Please select an API first"
+      },
+      "help": {
+        "tooltip": "View API usage guide",
+        "title": "API usage guide",
+        "button": "Got it",
+        "steps": [
+          "1) Create API: click Add API, then fill in name, type, and credentials.",
+          "2) Assign modules: choose a compatible API in each module dropdown; incompatible options are hidden automatically.",
+          "3) Enable modules: after choosing an API, toggle the switch to enable the module.",
+          "4) Deletion warning: removing an API in use will disable the related modules."
+        ]
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Delete API",
+          "message": "Delete the API \"{name}\"?",
+          "messageWithUsage": "Delete the API \"{name}\"? It is used by: {modules}. Deleting will disable those modules.",
+          "confirm": "Delete"
+        }
+      },
+      "listSeparator": ", ",
+      "modules": {
+        "translate": {
+          "name": "Translation API",
+          "description": "Used to translate repository descriptions"
+        },
+        "classify": {
+          "name": "Classification API",
+          "description": "Used to classify repositories with AI"
+        },
+        "chat": {
+          "name": "Chat API",
+          "description": "Reserved for AI chat features"
+        }
+      }
+    },
+      "dataManagement": {
+      "title": "Data Management",
+      "subtitle": "Import and export backups",
+      "sections": {
+        "export": {
+          "title": "Export data",
+          "description": "Export all data as a JSON file for backup or migration",
+          "button": "Export"
+        },
+        "import": {
+          "title": "Import data",
+          "description": "Import data from a JSON backup file (overwrites the current data)",
+          "button": "Import"
+        },
+        "clear": {
+          "title": "Clear all data",
+          "description": "Permanently delete all repositories, tags, folders, and metadata (cannot be undone)",
+          "button": "Clear"
+        }
+      },
+      "dialogs": {
+        "exportSelect": {
+          "title": "Choose what to export",
+          "subtitle": "Select the data types you want to export",
+          "options": {
+            "starData": {
+              "title": "Starred repos, groups, and metadata",
+              "desc": "Includes all synced repositories, tags, folders/groups, sync metadata, and group ordering."
+            },
+            "apiConfig": {
+              "title": "API credentials and module bindings",
+              "desc": "Includes all saved API credentials/configs and module-to-API bindings with enable states."
+            }
+          },
+          "needSelect": "Please select at least one item to export.",
+          "confirm": "Confirm export"
+        },
+        "clearFirst": {
+          "title": "Warning: this will delete all data!",
+          "intro": "The following will be removed:",
+          "items": [
+            "All synced repositories",
+            "All tags",
+            "All folders",
+            "All metadata"
+          ],
+          "warning": "This action cannot be undone.",
+          "question": "Do you want to continue?",
+          "confirm": "Continue"
+        },
+        "clearSelect": {
+          "title": "Choose what to clear",
+          "subtitle": "This cannot be undone—select carefully",
+          "options": {
+            "starData": {
+              "title": "Starred repos, groups, and metadata",
+              "desc": "Includes all synced repositories, tags, folders/groups, sync metadata, and group ordering."
+            },
+            "apiConfig": {
+              "title": "API credentials and module bindings",
+              "desc": "Includes all saved API credentials/configs and module-to-API bindings with enable states."
+            }
+          },
+          "warningTitle": "Risk warning",
+          "warningDesc": "Cleared data cannot be recovered. Please back up first if needed.",
+          "needSelect": "Please select at least one item to clear.",
+          "confirm": "Confirm clear"
+        },
+        "clearSecond": {
+          "title": "Final confirmation",
+          "message": "Are you sure you want to clear all data?",
+          "warning": "This will delete everything in the app!",
+          "confirm": "Confirm clear"
+        },
+        "importConfirm": {
+          "title": "Confirm data import",
+          "intro": "Import the selected data?",
+          "warning": "This will overwrite all current data.",
+          "previewTitle": "Import summary:",
+          "preview": {
+            "stars": "{count} repositories",
+            "groups": "{count} folders",
+            "tags": "{count} tags"
+          },
+          "confirm": "Import"
+        }
+      },
+      "alerts": {
+        "exportSuccess": "Data exported successfully!",
+        "exportFailed": "Export failed: {error}",
+        "selectFileFailed": "Selecting file failed: {error}",
+        "importSuccess": "Data imported successfully!",
+        "importFailed": "Import failed: {error}",
+        "clearSuccess": "All data has been cleared!",
+        "clearFailed": "Clearing data failed: {error}",
+        "unknownError": "Unknown error"
+      }
+    },
+    "general": {
+      "title": "General settings",
+      "subtitle": "Manage default behaviors and confirmation dialogs",
+      "language": {
+        "title": "Interface language",
+        "description": "Choose the language shown in the app",
+        "options": {
+          "zh-CN": "Simplified Chinese",
+          "en": "English"
+        }
+      },
+      "languageOptions": {
+        "zh-CN": "Simplified Chinese",
+        "en": "English"
+      },
+      "items": {
+        "linkConfirm": {
+          "title": "Ask before opening repository links",
+          "description": "Show a confirmation dialog when opening a repository link"
+        },
+        "tagDelete": {
+          "title": "Ask before removing tags",
+          "description": "Show a confirmation dialog when removing a tag"
+        },
+        "groupDelete": {
+          "title": "Ask before deleting folders",
+          "description": "Show a confirmation dialog when deleting a folder"
+        },
+        "starDeltaPrompt": {
+          "title": "Prompt to show star changes after syncing",
+          "description": "After a second sync, ask whether to show detailed star changes"
+        },
+        "starDeltaAuto": {
+          "title": "Automatically show star changes",
+          "description": "When skipped, automatically sort by star delta without asking"
+        },
+        "maxFolderDepth": {
+          "title": "Maximum folder depth",
+          "description": "Limit the nesting depth to keep folders easy to find",
+          "unit": "levels"
+        }
+      }
+    },
+    "about": {
+      "title": "About",
+      "subtitle": "App information and technology stack",
+      "description": "An elegant GitHub star management tool to help you better organize and discover excellent open source projects.",
+      "author": {
+        "title": "Author Information",
+        "role": "Open Source Developer",
+        "description": "We are dedicated to developing high-quality open source tools to help developers improve their work efficiency. If you like this project, feel free to give us a Star!",
+        "github": "GitHub",
+        "email": "Contact Us"
+      },
+      "technology": {
+        "title": "Technology Stack"
+      },
+      "license": {
+        "title": "Open Source License",
+        "description": "This project is licensed under the MIT License, allowing free use, modification, and distribution."
+      },
+      "acknowledgments": {
+        "title": "Acknowledgments",
+        "description": "Thanks to all developers who contribute to the open source community, and to all users who use and provide feedback on this project."
+      }
+    }
+  },
+  "groupList": {
+    "title": "Folders",
+    "actions": {
+      "createGroup": "New folder"
+    },
+    "defaults": {
+      "newFolder": "New folder"
+    },
+    "buttons": {
+      "all": "All",
+      "favorites": "Favorites",
+      "uncategorized": "New Uncategorized",
+      "unstarred": "Unstarred"
+    },
+    "labels": {
+      "languageTags": "Language tags",
+      "customTags": "Custom tags"
+    },
+    "language": {
+      "toggleCollapse": "Collapse",
+      "toggleExpand": "Show {count} more"
+    },
+    "tooltips": {
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "deleteTag": "Delete tag"
+    },
+    "forms": {
+      "groupNamePlaceholder": "Enter folder name",
+      "childGroupNamePlaceholder": "Enter sub-folder name",
+      "createChildUnder": "Create a sub-folder under \"{name}\""
+    },
+    "dialogs": {
+      "deleteTag": {
+        "title": "Delete tag",
+        "withUsage": "Delete the tag <span class=\"font-semibold\">{tag}</span>?<br>It is used by <span class=\"font-semibold\">{count}</span> repositories.",
+        "confirm": "Delete the tag <span class=\"font-semibold\">{tag}</span>?"
+      },
+      "deleteGroup": {
+        "title": "Delete folder",
+        "withUsage": "Delete the folder <span class=\"font-semibold\">{group}</span>?<br>It contains <span class=\"font-semibold\">{count}</span> items that will lose this folder.",
+        "confirm": "Delete the folder <span class=\"font-semibold\">{group}</span>?"
+      }
+    },
+    "context": {
+      "createFolder": "Create folder",
+      "rename": "Rename",
+      "systemGroupDisabled": "System folders cannot be changed"
+    },
+    "settings": "settings"
+  },
+  "starList": {
+    "common": {
+      "untitled": "Untitled",
+      "listSeparator": ", "
+    },
+    "overlay": {
+      "folderAggregating": "Aggregating folders...",
+      "classifying": "AI classification in progress...",
+      "folderAggregationStatus": "Aggregating {count} folders",
+      "progress": "Progress: {current} / {total}",
+      "cancel": "Cancel classification"
+    },
+    "stats": {
+      "childFolders": "{count} subfolders",
+      "repositories": "{count} repositories",
+      "repositoriesZero": "No repositories yet"
+    },
+    "sort": {
+      "label": "Sort",
+      "modeTooltip": "Sort mode",
+      "toggleTooltip": "Toggle sort direction",
+      "options": {
+        "default": "Default order",
+        "starDelta": "Star delta",
+        "starCount": "Star count",
+        "starredAt": "Starred date"
+      }
+    },
+    "ai": {
+      "tooltips": {
+        "accept": "Apply selected classification results",
+        "preview": "Preview folder hierarchy and counts",
+        "running": "Classification in progress...",
+        "start": "Start AI classification",
+        "refine": "Refine the current structure",
+        "cancelPreview": "Cancel preview",
+        "toggleAll": "Select/Deselect all preview results"
+      },
+      "buttons": {
+        "accept": "Apply ({count})",
+        "preview": "Folder preview",
+        "start": "AI Classify",
+        "refine": "Refine again",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all"
+      },
+      "config": {
+        "title": "AI classification settings",
+        "subtitle": "Process {count} uncategorized repositories",
+        "close": "Close configuration",
+        "notice": "This action requires an OpenAI-compatible API (DeepSeek, SiliconFlow, ChatGPT, etc).",
+        "fields": {
+          "concurrency": {
+            "label": "Concurrency",
+            "placeholder": "e.g. 6",
+            "hint": "Higher concurrency is faster but increases cost and rate-limit risk. Recommended 3-8."
+          }
+        },
+        "instructions": {
+          "description": "Create target folders on the left first to improve the classification results.",
+          "oneClick": "Create defaults"
+        },
+        "recommend": {
+          "title": "Recommended folders",
+          "empty": "No recommended folders",
+          "remove": "Remove recommended folder",
+          "placeholder": "Add custom folder (supports nested paths like Tools/CLI)",
+          "add": "Add",
+          "defaults": [
+            "Tools",
+            "Resources",
+            "Learning",
+            "Frameworks",
+            "AI",
+            "Other"
+          ]
+        },
+        "confirm": "Start classification"
+      },
+      "alerts": {
+        "noFolders": {
+          "title": "Nothing to create",
+          "message": "There are no folders to create."
+        },
+        "createSummary": {
+          "title": "Folder creation summary",
+          "created": "Created {count} folders.",
+          "createdWithList": "Created {count} folders ({list}).",
+          "skipped": "Skipped {count} folders (already existed).",
+          "skippedWithList": "Skipped {count} folders ({list}) — already existed.",
+          "failedWithList": "Failed to create {count} folders ({list})."
+        },
+        "noResult": {
+          "title": "Classification failed",
+          "message": "No repositories were classified. Check your API configuration."
+        },
+        "preview": {
+          "title": "Classification preview",
+          "message": "Generated previews for {count} repositories.",
+          "refineHint": "You can click \"Refine again\" to optimize the structure.",
+          "acceptHint": "Click \"Apply\" to accept the results."
+        },
+        "error": {
+          "title": "Classification failed",
+          "message": "Classification failed: {error}"
+        },
+        "cancelled": {
+          "title": "Cancelled",
+          "message": "AI classification was cancelled."
+        },
+        "limitReached": {
+          "title": "Classification finished",
+          "message": "{reason} Current top-level folders: {count}."
+        },
+        "optimizeDone": {
+          "title": "Refinement complete",
+          "message": "Folder structure has been optimized.",
+          "reminder": "Many top-level folders remain. You can refine again."
+        },
+        "optimizeFailed": {
+          "title": "Refinement failed",
+          "message": "Failed to refine classification: {error}"
+        },
+        "applyMixed": {
+          "title": "Classification completed",
+          "message": "Classification completed! Success: {success}, failed: {failed}."
+        },
+        "applySuccess": {
+          "title": "Classification applied",
+          "message": "Successfully classified {count} repositories!"
+        },
+        "applyFailed": {
+          "title": "Apply failed",
+          "message": "Failed to apply classification results: {error}"
+        },
+        "noSelection": {
+          "title": "No classification results selected",
+          "message": "Please select at least one classification result to apply."
+        }
+      },
+      "prompts": {
+        "excessGroups": {
+          "title": "Too many folders",
+          "message": "Generated {count} top-level folders. Refine them automatically?",
+          "confirm": "Refine now",
+          "cancel": "Preview first"
+        },
+        "refineMore": {
+          "title": "Too many top-level folders",
+          "message": "{count} top-level folders remain. Refine again?",
+          "confirm": "Refine again",
+          "cancel": "Preview first"
+        }
+      },
+      "errors": {
+        "generic": "Classification failed",
+        "limitReached": "Reached the maximum folder classification attempts",
+        "optimizeFailed": "Failed to refine classification",
+        "applyFailed": "Failed to apply classification results"
+      }
+    },
+    "selection": {
+      "summary": "Selected {count} repositories",
+      "selectAllCurrent": "Select current page",
+      "clear": "Clear selection",
+      "checkboxAria": "Select repository {name}",
+      "previewCheckboxAria": "Select preview classification result {name}"
+    },
+    "move": {
+      "selectTarget": "Select a target folder",
+      "collapseChildren": "Collapse subfolders",
+      "expandChildren": "Expand subfolders",
+      "selected": "Selected",
+      "empty": "No folders available",
+      "confirm": "Move",
+      "dialogs": {
+        "selectTarget": {
+          "title": "Select a target",
+          "message": "Choose a folder before moving."
+        }
+      },
+      "summary": {
+        "title": "Move complete",
+        "moved": "Moved {count} repositories.",
+        "skipped": "Skipped {count} repositories (already in target or missing data).",
+        "errorTitle": "Move failed",
+        "errorMessage": "Batch move failed"
+      }
+    },
+    "empty": {
+      "title": "No stars synced yet",
+      "action": "Click the sync button to get started."
+    },
+    "search": {
+      "noResults": "No repositories match the search."
+    },
+    "childGroup": {
+      "count": "{count} repositories"
+    },
+    "pagination": {
+      "pageStatus": "Page {current} / {total}",
+      "first": "First page",
+      "previous": "Previous page",
+      "next": "Next page",
+      "last": "Last page",
+      "perPageTitle": "Items per page",
+      "perPageOption": "Per page: {count}",
+      "scrollToTop": "Back to top"
+    },
+    "preview": {
+      "title": "Folder preview",
+      "subtitle": "Based on current AI classification preview",
+      "close": "Close preview",
+      "total": "{count} repositories",
+      "levelCount": "Level {level}: {count} folders",
+      "structure": "Hierarchy (with repository counts)",
+      "empty": "No folder data yet",
+      "nodeCount": "{count} repositories"
+    },
+    "groups": {
+      "favorites": "Favorites",
+      "alerts": {
+        "createFailed": {
+          "title": "Failed to create folder",
+          "message": "Failed to create folder"
+        }
+      },
+      "prompt": {
+        "create": "Enter a folder name:"
+      }
+    },
+    "unstarred": {
+      "clearTooltip": "Clear the unstarred folder",
+      "clearButton": "Clear ({count})",
+      "dialog": {
+        "title": "Clear \"Unstarred\" folder",
+        "message": "Are you sure you want to clear the \"Unstarred\" folder?",
+        "warning": "This will delete {count} repositories and cannot be undone.",
+        "confirm": "Clear now"
+      },
+      "alerts": {
+        "clearFailed": {
+          "title": "Clear failed",
+          "message": "Failed to clear the unstarred folder."
+        }
+      }
+    },
+    "tags": {
+      "alerts": {
+        "addFailed": {
+          "title": "Failed to add tag",
+          "message": "Failed to add tag"
+        }
+      }
+    },
+    "stars": {
+      "alerts": {
+        "deleteFailed": {
+          "title": "Failed to delete repository",
+          "message": "Failed to delete repository"
+        }
+      }
+    }
+  },
+  "starCard": {
+    "groups": {
+      "move": "Move to folder",
+      "noGroup": "Remove from folder",
+      "placeholder": "Select a folder",
+      "create": "Create new folder",
+      "empty": "No available folders",
+      "alreadyJoined": "Already added"
+    },
+    "labels": {
+      "lastPush": "Last push",
+      "previewBadge": "(Preview)",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "selectTags": "Select tags:"
+    },
+    "actions": {
+      "translate": "Translate",
+      "copyTranslation": "Copy translation",
+      "retranslate": "Retranslate",
+      "cancelTranslate": "Cancel translation",
+      "addNote": "Add note",
+      "addTag": "Add tag",
+      "addToGroup": "Add to folder",
+      "deleteTag": "Delete tag",
+      "deleteRepo": "Delete repository"
+    },
+    "placeholders": {
+      "note": "Add a note...",
+      "tagInput": "Type a tag, press Enter"
+    },
+    "tooltips": {
+      "translateToAppLanguage": "Translate to app language",
+      "filterOn": "Click to filter",
+      "filterOff": "Click to remove filter",
+      "removeGroup": "Remove this folder",
+      "removeSpecial": "Remove from Favorites",
+      "expandChildren": "Expand subfolders",
+      "collapseChildren": "Collapse subfolders",
+      "selectChild": "Select a subfolder",
+      "alreadyJoined": "Already added",
+      "alreadyInSpecial": "Already in Favorites",
+      "addToSpecial": "Add to Favorites",
+      "addToGroup": "Add to this folder",
+      "previewGroup": "Preview: AI suggested folder (apply via Accept)",
+      "toggleTagCompact": "Switch to compact mode",
+      "toggleTagGroup": "Switch to group mode"
+    },
+    "status": {
+      "translating": "Translating..."
+    },
+    "notes": {
+      "noteShortcuts": "Ctrl+Enter to save / Esc to cancel / Click outside to save"
+    },
+    "dialogs": {
+      "openLink": {
+        "title": "Open link",
+        "message": "Open this repository in your browser?"
+      },
+      "delete": {
+        "title": "Delete repository",
+        "message": "Are you sure you want to delete <span class=\"font-semibold\">{name}</span>?",
+        "warning": "This action cannot be undone.",
+        "confirm": "Delete"
+      },
+      "removeGroup": {
+        "title": "Remove from folder",
+        "message": "Remove this repository from the folder <span class=\"font-semibold\">{group}</span>?"
+      }
+    }
+    
+  }
+}
