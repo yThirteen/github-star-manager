@@ -34,22 +34,15 @@
           
           <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                G
-              </div>
+              <img :src="authorInfo.avatar_url" alt="作者头像" class="w-12 h-12 rounded-full" />
               <div>
-                <h5 class="font-medium text-gray-900 dark:text-gray-100">GitHub 星标管理器开发团队</h5>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.about.author.role') }}</p>
+                <h5 class="font-medium text-gray-900 dark:text-gray-100">{{ authorInfo.login || authorInfo.name }}</h5>
               </div>
             </div>
             
-            <p class="text-gray-700 dark:text-gray-300 mb-4">
-              {{ t('settings.about.author.description') }}
-            </p>
-
             <div class="flex flex-wrap gap-3">
               <a
-                href="https://github.com/yThirteen"
+                href="https://github.com/yThirteen/github-star-manage"
                 target="_blank"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-600 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors"
               >
@@ -59,15 +52,15 @@
                 {{ t('settings.about.author.github') }}
               </a>
               
-              <a
-                href="mailto:contact@example.com"
+              <button
+                @click="showAuthorEmail"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
                 {{ t('settings.about.author.email') }}
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -133,6 +126,62 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { ref, onMounted } from 'vue'
+import { useDialog } from '@/composables/useDialog'
 
 const { t } = useI18n()
+const { alert } = useDialog()
+
+interface GitHubUser {
+  login: string
+  name: string | null
+  avatar_url: string
+  email: string | null
+}
+
+const authorInfo = ref<GitHubUser>({
+  login: 'yThirteen',
+  name: null,
+  avatar_url: 'https://avatars.githubusercontent.com/u/134771578?v=4',
+  email: '1600975786@qq.com'
+})
+
+const fetchAuthorInfo = async () => {
+  try {
+    const response = await fetch('https://api.github.com/user/134771578')
+    if (response.ok) {
+      const data = await response.json()
+      authorInfo.value = {
+        login: data.login,
+        name: data.name,
+        avatar_url: data.avatar_url,
+        email: '1600975786@qq.com'
+      }
+    }
+  } catch (error) {
+    console.error('获取作者信息失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchAuthorInfo()
+})
+
+const showAuthorEmail = () => {
+  const email = authorInfo.value.email || '1600975786@qq.com'
+  navigator.clipboard.writeText(email).then(() => {
+    alert({
+      title: t('settings.about.author.copySuccess'),
+      message: t('settings.about.author.copySuccessMessage', { email }),
+      icon: '✅',
+      buttonClass: 'bg-green-600 hover:bg-green-700'
+    })
+  }).catch(() => {
+    alert({
+      title: t('settings.about.author.emailTitle'),
+      message: email,
+      icon: '📧'
+    })
+  })
+}
 </script>

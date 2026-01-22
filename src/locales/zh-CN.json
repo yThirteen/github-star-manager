@@ -479,13 +479,14 @@
      "about": {
       "title": "关于应用",
       "subtitle": "应用信息与技术栈",
-      "description": "一款优雅的 GitHub 星标管理工具，帮助你更好地组织和发现优秀的开源项目。",
+      "description": "一款简洁好用的 GitHub 星标管理工具，帮助你更好地管理收藏的开源项目。",
       "author": {
         "title": "作者信息",
-        "role": "开源开发者",
-        "description": "我们致力于开发高质量的开源工具，帮助开发者提升工作效率。如果你喜欢这个项目，欢迎给我们一个 Star！",
         "github": "GitHub",
-        "email": "联系我们"
+        "email": "联系作者",
+        "copySuccess": "复制成功",
+        "copySuccessMessage": "作者邮箱已复制到剪贴板：\n{email}",
+        "emailTitle": "作者邮箱"
       },
       "technology": {
         "title": "技术栈"

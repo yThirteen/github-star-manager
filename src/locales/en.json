@@ -478,13 +478,14 @@
     "about": {
       "title": "About",
       "subtitle": "App information and technology stack",
-      "description": "An elegant GitHub star management tool to help you better organize and discover excellent open source projects.",
+      "description": "A clean and easy-to-use GitHub starred repositories manager, helping you better organize your favorite open-source projects.",
       "author": {
         "title": "Author Information",
-        "role": "Open Source Developer",
-        "description": "We are dedicated to developing high-quality open source tools to help developers improve their work efficiency. If you like this project, feel free to give us a Star!",
         "github": "GitHub",
-        "email": "Contact Us"
+        "email": "Contact author",
+        "copySuccess": "Copy Success",
+        "copySuccessMessage": "Author email copied to clipboard:\n{email}",
+        "emailTitle": "Author Email"
       },
       "technology": {
         "title": "Technology Stack"
