@@ -18,5 +18,8 @@
     "fs:write-all",
     "shell:allow-open"
   ],
-  "allowed-paths": ["$APPDATA"]
+  "allowed-paths": ["$APPDATA"],
+  "remote": {
+    "urls": ["https://api.github.com/**", "https://avatars.githubusercontent.com/**"]
+  }
 }

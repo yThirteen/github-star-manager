@@ -495,10 +495,8 @@
         "title": "开源许可证",
         "description": "本项目采用 MIT 开源许可证，允许自由使用、修改和分发。"
       },
-      "acknowledgments": {
-        "title": "致谢",
-        "description": "感谢所有为开源社区做出贡献的开发者们，以及所有使用和反馈本项目的用户。"
-      }
+      "version": "版本 1.0.0",
+      "basedOn": "基于 Vue 3 + Tauri"
     }
   },
   "groupList": {

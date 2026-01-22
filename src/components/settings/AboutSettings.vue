@@ -20,9 +20,9 @@
             {{ t('settings.about.description') }}
           </p>
           <div class="flex justify-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span>版本 1.0.0</span>
+            <span>{{ t('settings.about.version') }}</span>
             <span>•</span>
-            <span>基于 Vue 3 + Tauri</span>
+            <span>{{ t('settings.about.basedOn') }}</span>
           </div>
         </div>
 
@@ -34,7 +34,12 @@
           
           <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div class="flex items-center gap-4 mb-4">
-              <img :src="authorInfo.avatar_url" alt="作者头像" class="w-12 h-12 rounded-full" />
+              <img 
+                :src="authorInfo.avatar_url" 
+                alt="作者头像" 
+                class="w-12 h-12 rounded-full"
+                @error="handleImageError"
+              />
               <div>
                 <h5 class="font-medium text-gray-900 dark:text-gray-100">{{ authorInfo.login || authorInfo.name }}</h5>
               </div>
@@ -157,10 +162,24 @@ const fetchAuthorInfo = async () => {
         avatar_url: data.avatar_url,
         email: '1600975786@qq.com'
       }
+      console.log('作者信息获取成功:', authorInfo.value)
+    } else {
+      console.warn('GitHub API 响应异常:', response.status, response.statusText)
+      // 使用默认头像
+      authorInfo.value.avatar_url = 'https://avatars.githubusercontent.com/u/134771578?v=4'
     }
   } catch (error) {
     console.error('获取作者信息失败:', error)
+    // 确保使用默认头像
+    authorInfo.value.avatar_url = 'https://avatars.githubusercontent.com/u/134771578?v=4'
   }
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  console.warn('头像加载失败，使用备用头像:', img.src)
+  // 使用 GitHub 的默认头像或备用头像
+  img.src = 'https://avatars.githubusercontent.com/u/134771578?v=4'
 }
 
 onMounted(() => {

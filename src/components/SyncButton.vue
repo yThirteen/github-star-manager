@@ -34,6 +34,12 @@
             {{ t('common.cancel') }}
           </button>
           <button
+            @click="showTokenGuide = true"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+          >
+            {{ t('settings.userManagement.token.form.getToken') }}
+          </button>
+          <button
             :disabled="isVerifyingToken"
             :class="[
               'px-4 py-2 rounded-lg text-white transition-colors',
@@ -46,11 +52,111 @@
         </div>
       </div>
     </div>
+    
+    <!-- Token 获取引导对话框 -->
+    <div
+      v-if="showTokenGuide"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {{ t('settings.userManagement.guide.title') }}
+          </h3>
+          <button
+            @click="showTokenGuide = false"
+            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            :aria-label="t('common.close')"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div class="space-y-4 text-sm text-gray-700 dark:text-gray-300">
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p class="font-medium text-blue-900 dark:text-blue-200 mb-2">{{ t('settings.userManagement.guide.intro.title') }}</p>
+            <p class="text-blue-800 dark:text-blue-300">
+              {{ t('settings.userManagement.guide.intro.body') }}
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.userManagement.guide.step1.title') }}</h4>
+            <p class="mb-2">{{ t('settings.userManagement.guide.step1.description') }}</p>
+            <a
+              href="https://github.com/settings/tokens"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {{ t('settings.userManagement.guide.buttons.openSettings') }}
+            </a>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.userManagement.guide.step2.title') }}</h4>
+            <ol class="list-decimal list-inside space-y-2 ml-2">
+              <li v-for="(item, index) in guideStep2Items" :key="`step2-${index}`" v-html="item"></li>
+            </ol>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.userManagement.guide.step3.title') }}</h4>
+            <ol class="list-decimal list-inside space-y-2 ml-2">
+              <li v-html="t('settings.userManagement.guide.step3.items.name')"></li>
+              <li v-html="t('settings.userManagement.guide.step3.items.expiration')"></li>
+              <li>
+                {{ t('settings.userManagement.guide.step3.items.scopes.intro') }}
+                <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                  <li v-for="(scope, index) in guideStep3Scopes" :key="`scope-${index}`" v-html="scope"></li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.userManagement.guide.step4.title') }}</h4>
+            <ol class="list-decimal list-inside space-y-2 ml-2">
+              <li v-for="(item, index) in guideStep4Items" :key="`step4-${index}`" v-html="item"></li>
+            </ol>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t('settings.userManagement.guide.step5.title') }}</h4>
+            <p>{{ t('settings.userManagement.guide.step5.description') }}</p>
+          </div>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <p class="font-medium text-yellow-900 dark:text-yellow-200 mb-1">{{ t('settings.userManagement.guide.security.title') }}</p>
+            <ul class="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-300 ml-2">
+              <li v-for="(item, index) in guideSecurityItems" :key="`security-${index}`">{{ item }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end gap-2">
+          <button
+            @click="showTokenGuide = false"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            {{ t('common.close') }}
+          </button>
+          <a
+            href="https://github.com/settings/tokens"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            {{ t('settings.userManagement.guide.buttons.openSettings') }}
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { StarItem } from '../types/star'
 import { useStarStore } from '../stores/starStore'
@@ -70,10 +176,17 @@ const uiStore = useUIStore()
 const settingsStore = useSettingsStore()
 const isLoading = ref(false)
 const showTokenInput = ref(false)
+const showTokenGuide = ref(false)
 const token = ref('')
 const isVerifyingToken = ref(false)
 const { alert: showAlert, confirm: showConfirm, confirmCheckboxValue } = useDialog()
-const { t } = useI18n()
+const { t, tm } = useI18n()
+
+// 引导内容的计算属性
+const guideStep2Items = computed(() => tm('settings.userManagement.guide.step2.items') as string[])
+const guideStep3Scopes = computed(() => tm('settings.userManagement.guide.step3.items.scopes.list') as string[])
+const guideStep4Items = computed(() => tm('settings.userManagement.guide.step4.items') as string[])
+const guideSecurityItems = computed(() => tm('settings.userManagement.guide.security.items') as string[])
 
 async function handleSync() {
   // 检查是否已有 token（可以从本地存储读取）
@@ -149,11 +262,6 @@ async function performSync(githubToken: string, verifiedUsername?: string) {
     )
     
     // 特殊文件夹名称
-  function closeTokenModal() {
-    showTokenInput.value = false
-    token.value = ''
-  }
-
     const UNCATEGORIZED_GROUP = '新增未分类'
     const UNSTARRED_GROUP = '已取消星标'
     

@@ -4,11 +4,7 @@
 
 
 ## 使用说明
-可以直接使用 [Releases](https://github.com/yThirteen/github-star-manage/releases) 中的便携版，或者使用可执行安装包。
-
-
-
-
+可以直接使用 [Releases](https://github.com/yThirteen/github-star-manage/releases) 中的便携版(portable)版本，或者使用可执行安装包。
 
 
 1) 首次运行后，点击页面顶部“同步 Stars”按钮。

@@ -494,10 +494,8 @@
         "title": "Open Source License",
         "description": "This project is licensed under the MIT License, allowing free use, modification, and distribution."
       },
-      "acknowledgments": {
-        "title": "Acknowledgments",
-        "description": "Thanks to all developers who contribute to the open source community, and to all users who use and provide feedback on this project."
-      }
+      "version": "Version 1.0.0",
+      "basedOn": "Based on Vue 3 + Tauri"
     }
   },
   "groupList": {
