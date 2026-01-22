@@ -2,7 +2,8 @@
  * 内置配置初始化工具
  */
 
-import { createApiItem } from './aiConfig'
+// import { createApiItem } from './aiConfig'
+// 改为动态导入以避免混合导入警告
 import type { ApiItem, AIModuleConfig } from '../types/ai'
 
 /**
@@ -69,6 +70,7 @@ export async function initBuiltinGoogleTranslate(): Promise<void> {
     }
 
     // 创建内置API配置
+    const { createApiItem } = await import('./aiConfig')
     const googleApi = await createApiItem(BUILTIN_GOOGLE_TRANSLATE_API)
 
     // 检查翻译模块配置

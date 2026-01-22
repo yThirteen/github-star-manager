@@ -1643,14 +1643,12 @@ function confirmCreateNewGroup() {
     errorMessage.value = error instanceof Error ? error.message : '创建分组失败'
     // 创建失败时不清除创建状态，让用户可以修改名称重试
     // 重新聚焦输入框
-    import('vue').then(({ nextTick }) => {
-      nextTick(() => {
-        const input = getCreatingInputElement()
-        if (input) {
-          input.focus()
-          input.select()
-        }
-      })
+    nextTick(() => {
+      const input = getCreatingInputElement()
+      if (input) {
+        input.focus()
+        input.select()
+      }
     })
   }
 }

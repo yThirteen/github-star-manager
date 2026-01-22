@@ -2,9 +2,11 @@
  * 数据导出/导入工具函数
  */
 
-import { invoke } from '@tauri-apps/api/core'
-import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs'
+// import { invoke } from '@tauri-apps/api/core'
+// import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs'
+// 改为动态导入以避免混合导入警告
 import type { StarData } from '../types/star'
+import { useStarStore } from '../stores/starStore'
 import {
   loadStarsFromDb,
   loadMetaFromDb,
@@ -73,6 +75,7 @@ export async function exportData(options?: ExportOptions): Promise<boolean> {
     const jsonStr = JSON.stringify(data, null, 2)
 
     try {
+      const { writeTextFile } = await import('@tauri-apps/plugin-fs')
       await writeTextFile(filePath, jsonStr)
       return true
     } catch (fsError) {
@@ -231,6 +234,7 @@ export async function selectImportFile(): Promise<any | null> {
     }
 
     console.log('开始读取文件...')
+    const { readTextFile } = await import('@tauri-apps/plugin-fs')
     const content = await readTextFile(filePath)
     console.log('文件读取成功，长度:', content.length)
     const data = JSON.parse(content)
@@ -393,10 +397,10 @@ async function performImport(data: any): Promise<void> {
       groupOrder: data.groupOrder || {},
     }
 
+    const { invoke } = await import('@tauri-apps/api/core')
     await invoke('import_all_data', { data: payload })
 
     // 重新加载数据到 store
-    const { useStarStore } = await import('../stores/starStore')
     const starStore = useStarStore()
     await starStore.reload()
   }
