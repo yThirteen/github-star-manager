@@ -92,6 +92,8 @@ github-star-manage/
 
 ## Star History
 
+## Star History
+
 [![Star History Chart](https://api.star-history.com/svg?repos=pollinations/pollinations,yThirteen/github-star-manage,github-star-manage/github-star-manage&type=date&legend=top-left)](https://www.star-history.com/#pollinations/pollinations&yThirteen/github-star-manage&github-star-manage/github-star-manage&type=date&legend=top-left)
 
 ## 许可证
