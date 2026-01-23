@@ -1,7 +1,7 @@
 {
   "productName": "GitHub Star Manager",
   "version": "1.0.0",
-  "identifier": "com.github-star-manage.app",
+  "identifier": "com.github-star-manager.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",

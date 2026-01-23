@@ -1,5 +1,5 @@
 [package]
-name = "github-star-manage"
+name = "github-star-manager"
 version = "1.0.0"
 description = "极简 GitHub Star 桌面管理器"
 authors = ["you"]
