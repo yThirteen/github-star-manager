@@ -14,11 +14,3 @@ export interface GitHubStarResponse {
   starred_at: string
   [key: string]: unknown
 }
-
-export interface GitHubReleaseResponse {
-  tag_name: string
-  published_at: string
-  html_url: string
-  [key: string]: unknown
-}
-

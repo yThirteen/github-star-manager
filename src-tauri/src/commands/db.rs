@@ -853,10 +853,11 @@ pub async fn import_all_data(data: StarData, state: State<'_, DbState>) -> Resul
                 tx.execute(
                     r#"INSERT OR REPLACE INTO stars (
                         id, name, full_name, description, html_url, language, stargazers_count,
+                        previous_stargazers_count,
                         tags, groups, notes, starred_at,
                         last_release_tag, last_release_published_at, last_release_html_url,
                         translated_description, updated_at
-                    ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)"#,
+                    ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)"#,
                     rusqlite::params![
                         star.id,
                         star.name,
@@ -865,6 +866,7 @@ pub async fn import_all_data(data: StarData, state: State<'_, DbState>) -> Resul
                         star.html_url,
                         star.language,
                         star.stargazers_count,
+                        star.previous_stargazers_count,
                         tags_json,
                         groups_json,
                         star.notes,

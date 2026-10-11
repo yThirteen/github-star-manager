@@ -63,7 +63,7 @@ function getStoredLanguage(): AppLocale | null {
 }
 
 // 保存语言设置
-export function saveLanguage(locale: AppLocale) {
+function saveLanguage(locale: AppLocale) {
   try {
     localStorage.setItem('app-language', locale)
   } catch (error) {

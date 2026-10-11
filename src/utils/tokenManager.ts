@@ -80,13 +80,6 @@ export async function getTokenInfo(): Promise<TokenInfo | null> {
 }
 
 /**
- * 强制刷新 token 缓存
- */
-export async function reloadTokenInfo(): Promise<TokenInfo | null> {
-  return refreshTokenCache()
-}
-
-/**
  * 保存 token
  * @param token - GitHub token
  */
@@ -204,84 +197,6 @@ export async function verifyToken(token: string): Promise<{
       valid: false,
       error: error instanceof Error ? error.message : '验证失败',
     }
-  }
-}
-
-/**
- * 计算 token 剩余时间（基于创建时间，如果用户设置了过期时间）
- * 注意：GitHub API 不直接返回过期时间，这里返回的是基于用户设置的过期时间
- */
-export async function getTokenRemainingTime(): Promise<{
-  hasToken: boolean
-  remainingDays?: number
-  message: string
-}> {
-  const token = await getStoredToken()
-  if (!token) {
-    return {
-      hasToken: false,
-      message: '未设置 Token',
-    }
-  }
-
-  const tokenInfo = await getTokenInfo()
-  if (!tokenInfo) {
-    return {
-      hasToken: true,
-      message: 'Token 信息不可用',
-    }
-  }
-
-  // 如果设置了过期时间
-  if (tokenInfo.expiresAt) {
-    const expiresAt = new Date(tokenInfo.expiresAt)
-    const now = new Date()
-    const diffMs = expiresAt.getTime() - now.getTime()
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-    if (diffMs < 0) {
-      return {
-        hasToken: true,
-        remainingDays: 0,
-        message: 'Token 已过期',
-      }
-    }
-
-    return {
-      hasToken: true,
-      remainingDays: diffDays,
-      message: diffDays > 30 ? `剩余 ${diffDays} 天` : diffDays > 0 ? `剩余 ${diffDays} 天` : '即将过期',
-    }
-  }
-
-  // 如果没有设置过期时间，尝试根据创建时间推断（如果是最近30天内创建的，假设是30天token）
-  if (tokenInfo.createdAt) {
-    const createdAt = new Date(tokenInfo.createdAt)
-    const now = new Date()
-    const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
-    
-    // 如果是在30天内创建的，且没有设置过期时间，可能是30天token但用户没有手动设置
-    // 我们假设如果创建时间在30天内，且没有过期时间，可能是30天token，显示预计剩余时间
-    if (daysSinceCreation < 30) {
-      const estimatedExpiresAt = new Date(createdAt)
-      estimatedExpiresAt.setDate(estimatedExpiresAt.getDate() + 30)
-      const diffMs = estimatedExpiresAt.getTime() - now.getTime()
-      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-      
-      if (diffDays > 0) {
-        return {
-          hasToken: true,
-          remainingDays: diffDays,
-          message: `预计剩余 ${diffDays} 天（基于30天默认值）`,
-        }
-      }
-    }
-  }
-  
-  // 如果没有设置过期时间且无法推断，显示永久有效
-  return {
-    hasToken: true,
-    message: '永久有效（未设置过期时间）',
   }
 }
 

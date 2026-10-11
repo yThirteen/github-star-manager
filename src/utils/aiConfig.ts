@@ -117,43 +117,6 @@ export async function saveModuleConfig(config: AIModuleConfig): Promise<void> {
 }
 
 /**
- * 验证 API 配置
- */
-export async function verifyApiConfig(
-  api: ApiItem,
-  _module?: AIModule
-): Promise<{
-  valid: boolean
-  error?: string
-  message?: string
-}> {
-  // 检查必需字段
-  if (!api.name?.trim()) {
-    return { valid: false, error: '请提供 API 名称' }
-  }
-  
-  // Google Translate 不需要 API Key
-  if (api.apiType === 'google') {
-    return { valid: true, message: 'Google Translate 配置正确' }
-  }
-  
-  // OpenAI 需要 API Key
-  if (api.apiType === 'openai' ) {
-    if (!api.apiKey?.trim()) {
-      return { valid: false, error: '请提供 API Key' }
-    }
-    return { valid: true, message: '配置格式正确' }
-  }
-
-  // 兜底
-  if (!api.apiKey?.trim()) {
-    return { valid: false, error: '请提供 API Key' }
-  }
-  
-  return { valid: true, message: '配置格式正确' }
-}
-
-/**
  * 格式化 API Key（用于显示）
  */
 export function formatApiKey(apiKey: string | undefined): string {

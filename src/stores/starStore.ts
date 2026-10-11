@@ -7,6 +7,7 @@ import { ref, computed } from 'vue'
 import type { StarItem, StarData } from '../types/star'
 import { loadStarData, saveStarData } from '../utils/storage'
 import { clearSearchIndexCache } from '../utils/searchCache'
+import { deleteStarFromDb } from '../utils/database'
 import { useSettingsStore } from './settingsStore'
 
 // 最大允许的分组层级默认值（可通过设置调整）
@@ -30,11 +31,30 @@ export const useStarStore = defineStore('star', () => {
     stars.value.filter((star) => star.stargazers_count > 0)
   )
 
+  // 系统伪分组的仓库数量。单次遍历 stars 统计，供 GroupList / StarList 直接读取，
+  // 避免模板里每个数量显示都做一次全量 filter（旧实现每次渲染都是 O(仓库数) × 调用次数）。
+  const SYSTEM_GROUP_NAMES = ['新增未分类', '特别关注', '已取消星标'] as const
+  const systemGroupCounts = computed(() => {
+    const counts: Record<string, number> = {}
+    SYSTEM_GROUP_NAMES.forEach((name) => {
+      counts[name] = 0
+    })
+    stars.value.forEach((star) => {
+      if (!star.groups) return
+      for (const group of star.groups) {
+        // 只统计已知的系统伪分组（其它分组由 GroupList 的 groupCountMap 负责）
+        if (counts[group] !== undefined) {
+          counts[group]++
+        }
+      }
+    })
+    return counts
+  })
+
   // 从本地加载数据
   async function loadFromLocal(forceReload = false) {
     // 如果已经有数据且不是强制重新加载，跳过
     if (!forceReload && stars.value.length > 0) {
-      console.log('数据已存在，跳过重新加载')
       return
     }
     
@@ -50,9 +70,6 @@ export const useStarStore = defineStore('star', () => {
           groups.value = data.groups || []
           tags.value = data.tags || []
           groupOrder.value = data.groupOrder || {}
-          console.log('数据加载成功，stars 数量:', data.stars.length)
-        } else {
-          console.log('加载的数据为空，保持现有数据不变')
         }
       }
     } catch (error) {
@@ -136,28 +153,38 @@ export const useStarStore = defineStore('star', () => {
       stars.value.splice(index, 1)
       // 从数据库中删除
       try {
-        const { deleteStarFromDb } = await import('../utils/database')
         await deleteStarFromDb(id)
       } catch (error) {
         console.error('Failed to delete star from database:', error)
       }
-      saveToLocal()
+      // 数据库行已单独删除；groups/tags/groupOrder/meta 都不受删除影响，
+      // 因此不需要再触发一次「重写整张 stars 表」的保存，只需让搜索索引失效。
+      clearSearchIndexCache()
     }
   }
 
   // 清空"已取消星标"文件夹中的所有仓库
   async function clearUnstarredGroup() {
-    const unstaredStars = stars.value.filter((star) => 
+    const unstaredStars = stars.value.filter((star) =>
       star.groups.includes('已取消星标')
     )
-    
+
     if (unstaredStars.length === 0) {
       return
     }
-    
-    // 删除所有已取消星标的仓库
-    for (const star of unstaredStars) {
-      await deleteStar(star.id)
+
+    const ids = unstaredStars.map((star) => star.id)
+    const removedIds = new Set(ids)
+
+    // 一次性从内存中移除，避免逐条 splice 造成 O(n²)
+    stars.value = stars.value.filter((star) => !removedIds.has(star.id))
+    clearSearchIndexCache()
+
+    // 并行发送单行删除，而不是逐条 await（互相独立，无需串行）
+    const results = await Promise.allSettled(ids.map((id) => deleteStarFromDb(id)))
+    const failed = results.filter((result) => result.status === 'rejected').length
+    if (failed > 0) {
+      console.error(`清除已取消星标：${failed}/${ids.length} 条数据库删除失败`)
     }
   }
 
@@ -291,6 +318,11 @@ export const useStarStore = defineStore('star', () => {
     const trimmedName = groupName.trim()
     if (!trimmedName) {
       throw new Error('分组名称不能为空')
+    }
+    // 名称里不允许出现 '/'：顶层输入 "a/b" 或子分组输入 "x/y" 都会创建出父路径不存在的
+    // 「幽灵分组」（不在 topLevelGroups 中、也没有已声明的父分组），它在侧边栏里不可见、不可删除
+    if (trimmedName.includes('/')) {
+      throw new Error('分组名称不能包含 “/”')
     }
     
     // 构建完整的分组路径：父分组/子分组
@@ -437,21 +469,23 @@ export const useStarStore = defineStore('star', () => {
     if (oldName === newFullPath) {
       return // 名称未改变
     }
+    // 只允许在同级内改名：新路径的父路径必须与原父路径一致。
+    // 否则会改名出父路径不存在的「幽灵分组」，在侧边栏里不可见也不可删除。
+    const parentOf = (path: string) => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '')
+    if (parentOf(oldName) !== parentOf(newFullPath)) {
+      throw new Error('分组名称不能包含 “/”')
+    }
     
     if (groups.value.includes(newFullPath)) {
       throw new Error('新分组名称已存在')
     }
     
-    // 检查是否是子分组
-    const isChildGroup = oldName.includes('/')
-    
     // Windows 文件系统逻辑：找到所有需要更新的子分组（包括所有层级的嵌套子分组）
     // 例如：如果 "cracktools" 被重命名为 "new_cracktools"
     // 那么 "cracktools/sub1" -> "new_cracktools/sub1"
     // 和 "cracktools/sub1/sub2" -> "new_cracktools/sub1/sub2" 都需要更新
-    const allChildGroups = !isChildGroup 
-      ? groups.value.filter((g) => g.startsWith(`${oldName}/`))
-      : []
+    // 注意：这里对任意层级都要递归（旧实现只对一级分组生效，重命名中间层分组会留下孤儿分组）
+    const allChildGroups = groups.value.filter((g) => g.startsWith(`${oldName}/`))
     
     // 创建路径映射：旧路径 -> 新路径
     const pathMapping = new Map<string, string>()
@@ -460,7 +494,7 @@ export const useStarStore = defineStore('star', () => {
     pathMapping.set(oldName, newFullPath)
     
     // 递归更新所有子分组的路径映射
-    if (!isChildGroup && allChildGroups.length > 0) {
+    if (allChildGroups.length > 0) {
       allChildGroups.forEach((childGroup) => {
         // 计算新路径：将 oldName 替换为 newFullPath（只替换路径前缀）
         // 例如："cracktools/sub1/sub2" -> "new_cracktools/sub1/sub2"
@@ -632,6 +666,7 @@ export const useStarStore = defineStore('star', () => {
     // 计算属性
     hasStars,
     starredRepos,
+    systemGroupCounts,
     // 方法
     setStars,
     updateStar,

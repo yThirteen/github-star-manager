@@ -2,9 +2,9 @@
  * 数据导出/导入工具函数
  */
 
-// import { invoke } from '@tauri-apps/api/core'
-// import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs'
-// 改为动态导入以避免混合导入警告
+// plugin-fs / plugin-dialog 保持动态导入：全项目只有这里用到它们，动态导入让构建产物
+// 把它们拆成按需加载的独立 chunk；改成静态导入会把它们塞进主包。
+import { invoke } from '@tauri-apps/api/core'
 import type { StarData } from '../types/star'
 import { useStarStore } from '../stores/starStore'
 import {
@@ -14,9 +14,15 @@ import {
   loadTagsFromDb,
   loadGroupOrderFromDb,
 } from './database'
+import {
+  createApiItem,
+  getAllApiItems,
+  getAllModuleConfigs,
+  saveModuleConfig,
+} from './aiConfig'
 
 // 导出选项接口
-export interface ExportOptions {
+interface ExportOptions {
   starData: boolean
   apiConfig: boolean
 }
@@ -134,18 +140,14 @@ async function loadSelectedData(options: ExportOptions): Promise<any> {
   if (options.apiConfig) {
     if (!isTauriAvailable()) {
       // 浏览器环境：API 配置不存储在 localStorage 中，返回空对象
-      console.log('浏览器环境：API 配置不存储，返回空对象')
       result.apiConfig = {}
     } else {
       // Tauri 环境：从数据库加载 API 配置
       try {
-        console.log('Tauri 环境：开始加载 API 配置')
-        const { getAllApiItems, getAllModuleConfigs } = await import('./aiConfig')
         const [apis, configs] = await Promise.all([
           getAllApiItems(),
           getAllModuleConfigs(),
         ])
-        console.log('API 配置加载成功:', { apisCount: apis.length, configsCount: configs.length })
         result.apiConfig = {
           apis,
           moduleConfigs: configs,
@@ -203,20 +205,14 @@ export async function selectImportFile(): Promise<any | null> {
 
   // Tauri 环境：使用文件对话框
   try {
-    console.log('=== 导入数据 ===')
-    console.log('Tauri 环境，使用文件对话框导入')
-    console.log('尝试导入 @tauri-apps/plugin-dialog...')
     const dialogModule = await import('@tauri-apps/plugin-dialog')
-    console.log('Dialog 模块导入成功:', dialogModule)
-    console.log('Dialog 模块的键:', Object.keys(dialogModule))
-    
+
     // 检查 open 函数是否存在
     if (!dialogModule.open) {
       console.error('Dialog 模块中没有 open 函数')
       throw new Error('Dialog open 函数不可用')
     }
     
-    console.log('调用 open 函数...')
     const filePath = await dialogModule.open({
       filters: [
         {
@@ -226,20 +222,15 @@ export async function selectImportFile(): Promise<any | null> {
       ],
     }) as string | null
     
-    console.log('选择的文件路径:', filePath)
 
     if (!filePath || typeof filePath !== 'string') {
-      console.log('用户取消了文件选择或路径无效')
       return null
     }
 
-    console.log('开始读取文件...')
     const { readTextFile } = await import('@tauri-apps/plugin-fs')
     const content = await readTextFile(filePath)
-    console.log('文件读取成功，长度:', content.length)
     const data = JSON.parse(content)
-    console.log('JSON 解析成功')
-
+    
     // 验证数据格式
     if (!validateDataFormat(data)) {
       alert('文件格式不正确，请确保是有效的备份文件')
@@ -327,12 +318,9 @@ async function performImport(data: any): Promise<void> {
   // 处理 API 配置导入（无论是否同时有星标数据）
   if (data.apiConfig && isTauriAvailable()) {
     try {
-      console.log('开始导入 API 配置')
-      const { createApiItem, saveModuleConfig, getAllApiItems } = await import('./aiConfig')
       
       // 导入 API 配置
       if (data.apiConfig.apis && Array.isArray(data.apiConfig.apis)) {
-        console.log('导入', data.apiConfig.apis.length, '个 API 配置')
         for (const api of data.apiConfig.apis) {
           try {
             await createApiItem({
@@ -344,7 +332,6 @@ async function performImport(data: any): Promise<void> {
               tags: api.tags || [],
               description: api.description || '',
             })
-            console.log('API 配置导入成功:', api.name)
           } catch (error) {
             console.error('导入 API 配置失败:', api.name, error)
           }
@@ -353,7 +340,6 @@ async function performImport(data: any): Promise<void> {
 
       // 导入模块配置
       if (data.apiConfig.moduleConfigs && Array.isArray(data.apiConfig.moduleConfigs)) {
-        console.log('导入', data.apiConfig.moduleConfigs.length, '个模块配置')
         
         // 获取已导入的 API ID 列表，用于验证外键约束
         const importedApis = await getAllApiItems()
@@ -368,20 +354,16 @@ async function performImport(data: any): Promise<void> {
             }
             
             await saveModuleConfig(validConfig)
-            console.log('模块配置导入成功:', config.module)
           } catch (error) {
             console.error('导入模块配置失败:', config.module, error)
           }
         }
       }
 
-      console.log('API 配置导入完成')
     } catch (error) {
       console.error('API 配置导入失败:', error)
       // 不抛出错误，让星标数据导入继续进行
     }
-  } else if (data.apiConfig && !isTauriAvailable()) {
-    console.log('浏览器环境：跳过 API 配置导入')
   }
 
   // 处理星标数据导入（如果存在）
@@ -397,7 +379,6 @@ async function performImport(data: any): Promise<void> {
       groupOrder: data.groupOrder || {},
     }
 
-    const { invoke } = await import('@tauri-apps/api/core')
     await invoke('import_all_data', { data: payload })
 
     // 重新加载数据到 store

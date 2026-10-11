@@ -5,7 +5,7 @@
 
 import { ref, provide, inject } from 'vue'
 
-export interface ConfirmOptions {
+interface ConfirmOptions {
   title?: string
   message: string
   confirmText?: string
@@ -16,7 +16,7 @@ export interface ConfirmOptions {
   checkboxDefault?: boolean
 }
 
-export interface AlertOptions {
+interface AlertOptions {
   title?: string
   message: string
   icon?: string
@@ -25,7 +25,7 @@ export interface AlertOptions {
 }
 
 // 对话框服务类型
-export interface DialogService {
+interface DialogService {
   confirmVisible: ReturnType<typeof ref<boolean>>
   confirmOptions: ReturnType<typeof ref<ConfirmOptions>>
   confirmCheckboxValue: ReturnType<typeof ref<boolean>>

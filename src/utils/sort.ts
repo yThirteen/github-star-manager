@@ -37,7 +37,7 @@ const collator = new Intl.Collator('zh-CN', {
 /**
  * 获取字符串的首字母排序键（中文按拼音首字母，英文按字母）
  */
-export function getFirstLetterKey(str: string): string {
+function getFirstLetterKey(str: string): string {
   if (!str || str.length === 0) {
     return 'z'
   }

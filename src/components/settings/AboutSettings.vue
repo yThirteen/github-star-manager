@@ -11,7 +11,7 @@
         <!-- 应用信息 -->
         <div class="text-center py-6 border-b border-gray-200 dark:border-gray-700">
           <div class="mb-4">
-            <img src="/app-icon.png" alt="GitHub 星标管理器" class="w-20 h-20 mx-auto rounded-lg shadow-md" />
+            <img src="/app-icon-256.png" alt="GitHub 星标管理器" class="w-20 h-20 mx-auto rounded-lg shadow-md" />
           </div>
           <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             {{ t('common.appName') }}
@@ -162,7 +162,6 @@ const fetchAuthorInfo = async () => {
         avatar_url: data.avatar_url,
         email: '1600975786@qq.com'
       }
-      console.log('作者信息获取成功:', authorInfo.value)
     } else {
       console.warn('GitHub API 响应异常:', response.status, response.statusText)
       // 使用默认头像

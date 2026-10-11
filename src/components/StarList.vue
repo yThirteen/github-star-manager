@@ -773,8 +773,11 @@ const showContinueClassify = ref(false)
 const hasPreviewResults = computed(() => previewResults.value.size > 0)
 const selectedPreviewCount = computed(() => {
   let count = 0
-  for (const [_starId, selected] of previewSelections.value) {
-    if (selected) count++
+  // 只遍历当前预览结果：previewSelections 只写不删（selectAllPreviews 只 set 不 delete），
+  // 而 previewResults 在「继续分类」时会被整体替换，直接遍历 previewSelections 会把上一轮的旧键也算进来，
+  // 使「接收分类结果 (N)」的数字比实际可见/会被接收的行数虚高。
+  for (const starId of previewResults.value.keys()) {
+    if (previewSelections.value.get(starId)) count++
   }
   return count
 })
@@ -1584,15 +1587,17 @@ const filteredStars = computed(() => {
   const option = uiStore.sortOption as SortOption
   if (option !== 'default') {
     const direction = uiStore.sortOrder === 'desc' ? -1 : 1
-    result.sort((a, b) => {
-      const metricA = getSortMetric(a, option)
-      const metricB = getSortMetric(b, option)
-      const diff = metricA - metricB
+    // 排序指标先每条算一次。原来在比较器里调用 getSortMetric，starredAt 会为每次比较
+    // new Date(...).getTime()，5000 条约 6 万次 Date 构造；预先算好结果完全等价。
+    const withMetric = result.map((star) => ({ star, metric: getSortMetric(star, option) }))
+    withMetric.sort((a, b) => {
+      const diff = a.metric - b.metric
       if (diff !== 0) {
         return diff * direction
       }
-      return a.full_name.localeCompare(b.full_name)
+      return a.star.full_name.localeCompare(b.star.full_name)
     })
+    result = withMetric.map((entry) => entry.star)
   }
 
   return result
@@ -1677,19 +1682,23 @@ const childGroupItems = computed(() => displayItems.value.filter((i) => i.type =
 const totalPages = computed(() => Math.max(1, Math.ceil(starItems.value.length / pageSize.value)))
 
 const displayItemsPaginated = computed<DisplayItem[]>(() => {
-  // 保证当前页在范围内
-  if (currentPage.value > totalPages.value) {
-    currentPage.value = totalPages.value
-  }
-  if (currentPage.value < 1) {
-    currentPage.value = 1
-  }
+  // 只在本地钳制页码，不要在这里写 currentPage：
+  // 在 computed 内部修改自己依赖的状态会造成自失效（多一次渲染），也是
+  // "Maximum recursive updates exceeded in component <StarList>" 的经典触发点。
+  // 越界时真正回写 uiStore 由下面监听 totalPages 的 watch 统一负责。
+  const pages = totalPages.value
+  const rawPage = currentPage.value
+  const page = rawPage > pages ? pages : rawPage < 1 ? 1 : rawPage
 
-  const start = (currentPage.value - 1) * pageSize.value
+  const start = (page - 1) * pageSize.value
   const end = start + pageSize.value
   const starsSlice = starItems.value.slice(start, end)
   return [...childGroupItems.value, ...starsSlice]
 })
+
+// 数据变少（删除/筛选/改每页条数）导致当前页越界时，把页码拉回有效范围。
+// 放在 watch 里而不是在 computed 内写状态；挂载时的一次性校正见 onMounted 里的 clampCurrentPage()。
+watch(totalPages, clampCurrentPage)
 
 type DisplayStarItem = Extract<DisplayItem, { type: 'star' }>
 
@@ -1876,21 +1885,34 @@ async function handleBatchMove() {
 }
 
 function prevPage() {
-  if (currentPage.value > 1) currentPage.value -= 1
+  if (currentPage.value > 1) {
+    currentPage.value -= 1
+    resetListScroll()
+  }
 }
 function nextPage() {
-  if (currentPage.value < totalPages.value) currentPage.value += 1
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1
+    resetListScroll()
+  }
 }
 function goFirstPage() {
-  if (currentPage.value !== 1) currentPage.value = 1
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+    resetListScroll()
+  }
 }
 function goLastPage() {
   const last = totalPages.value
-  if (currentPage.value !== last) currentPage.value = last
+  if (currentPage.value !== last) {
+    currentPage.value = last
+    resetListScroll()
+  }
 }
 function onPageSizeChange(e: Event) {
   const val = Number((e.target as HTMLSelectElement).value)
   uiStore.setPageSize(val)
+  resetListScroll()
 }
 
 // ===== 列表内直达顶部按钮（监听外层滚动容器） =====
@@ -1910,6 +1932,23 @@ function scrollToTop() {
   }
 }
 
+// 翻页或改筛选条件后立刻回到列表顶部。
+// 不做这一步的话，前后两页内容高度相近时浏览器会保留 scrollTop，看到的是新一页的底部。
+function resetListScroll() {
+  if (listScrollContainer.value) {
+    listScrollContainer.value.scrollTop = 0
+  }
+  showScrollToTop.value = false
+}
+
+// 当前页超出总页数时把 uiStore 里的页码拉回有效值（displayItemsPaginated 内部只做本地钳制）
+function clampCurrentPage() {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value
+    resetListScroll()
+  }
+}
+
 onMounted(() => {
   // 寻找上层滚动容器（Home 中为 .overflow-y-auto）
   listScrollContainer.value = (rootEl.value?.closest('.overflow-y-auto') as HTMLElement | null) ?? null
@@ -1918,6 +1957,8 @@ onMounted(() => {
     // 初始化显示状态
     handleListScroll()
   }
+  // 挂载时若 uiStore 里的页码已越界（例如离开本页期间数据被删减）则校正一次
+  clampCurrentPage()
   document.addEventListener('click', handleClickOutsideMove)
 })
 
@@ -1942,6 +1983,7 @@ watch(
   () => {
     uiStore.setCurrentPage(1)
     clearSelection()
+    resetListScroll()
   }
 )
 
@@ -2050,12 +2092,9 @@ function handleUpdateNotes(starId: string, notes: string) {
   starStore.updateStar(starId, { notes })
 }
 
-// 获取"已取消星标"文件夹中的仓库数量
+// 获取"已取消星标"文件夹中的仓库数量（读 store 的预计算值，避免模板每次渲染都全量 filter）
 function getUnstarredCount(): number {
-  if (!starStore.stars || starStore.stars.length === 0) {
-    return 0
-  }
-  return starStore.stars.filter((star) => star.groups && star.groups.includes('已取消星标')).length
+  return starStore.systemGroupCounts['已取消星标'] || 0
 }
 
 // 删除仓库

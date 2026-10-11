@@ -38,48 +38,6 @@ export interface AIModuleConfig {
 }
 
 /**
- * API 提供商类型信息（用于 UI 展示）
- */
-export interface ApiTypeInfo {
-  type: ApiType
-  name: string
-  description: string
-  requiresApiKey: boolean
-  requiresApiUrl: boolean
-  defaultUrl?: string
-  supportedModules: AIModule[]
-  configFields: {
-    model?: boolean // 是否需要模型配置
-  }
-}
-
-/**
- * API 提供商类型信息（用于创建 API 时的参考）
- */
-export const API_TYPES: Record<ApiType, ApiTypeInfo> = {
-  openai: {
-    type: 'openai',
-    name: 'OpenAI',
-    description: '使用 OpenAI API规范的API（需要 API Key）',
-    requiresApiKey: true,
-    requiresApiUrl: false,
-    defaultUrl: 'https://api.openai.com/v1',
-    supportedModules: ['translate', 'classify', 'chat'],
-    configFields: { model: true },
-  },
-  google: {
-    type: 'google',
-    name: 'Google Translate',
-    description: '免费的 Google 翻译服务（公共 API）',
-    requiresApiKey: false,
-    requiresApiUrl: false,
-    defaultUrl: 'https://translate.googleapis.com/translate_a/single',
-    supportedModules: ['translate'],
-    configFields: {},
-  },
-}
-
-/**
  * AI 模块信息
  */
 export interface AIModuleInfo {

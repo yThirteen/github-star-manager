@@ -601,7 +601,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, nextTick, ref, withDirectives, watch } from 'vue'
+import { computed, defineComponent, h, nextTick, onUnmounted, ref, withDirectives, watch } from 'vue'
+import { saveGroupOrderToDb } from '../utils/database'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useStarStore } from '../stores/starStore'
@@ -738,57 +739,64 @@ const topLevelGroups = computed(() => {
 
 // 获取新增未分类文件夹的项目数量
 function getUncategorizedGroupCount(): number {
-  if (!starStore.stars || starStore.stars.length === 0) {
-    return 0
-  }
-  return starStore.stars.filter((star) => star.groups && star.groups.includes('新增未分类')).length
+  return starStore.systemGroupCounts['新增未分类'] || 0
 }
 
 // 获取特别关注文件夹的项目数量
 function getStarredGroupCount(): number {
-  if (!starStore.stars || starStore.stars.length === 0) {
-    return 0
-  }
-  return starStore.stars.filter((star) => star.groups && star.groups.includes('特别关注')).length
+  return starStore.systemGroupCounts['特别关注'] || 0
 }
 
 // 获取已取消星标文件夹的项目数量
 function getUnstarredGroupCount(): number {
-  if (!starStore.stars || starStore.stars.length === 0) {
-    return 0
-  }
-  return starStore.stars.filter((star) => star.groups && star.groups.includes('已取消星标')).length
+  return starStore.systemGroupCounts['已取消星标'] || 0
 }
 
+type ChildGroupEntry = { name: string; fullPath: string; order: number }
+
+// 「父分组路径 → 子分组数组（按排序值升序）」索引。
+// 旧实现每次调用都对全部 groups 做 filter + 建 Map + sort，而模板在同一个 v-for 里会调用数次
+// （:118、:202、:206 以及 GroupTree 渲染函数、:1166 等），整体约 O(分组数² log 分组数)/次渲染。
+// 这里一次遍历所有分组，为每个分组的每一层祖先登记其「下一段」作为子项，之后查表即可。
+const childGroupsIndex = computed(() => {
+  const index = new Map<string, ChildGroupEntry[]>()
+  const childMaps = new Map<string, Map<string, ChildGroupEntry>>()
+  const groupOrder = starStore.groupOrder || {}
+
+  starStore.groups?.filter(Boolean).forEach((g: string) => {
+    const segments = g.split('/').filter(Boolean)
+    if (segments.length < 2) return
+    let parentPath = ''
+    for (let i = 0; i < segments.length - 1; i++) {
+      parentPath = parentPath ? `${parentPath}/${segments[i]}` : segments[i]
+      const fullPath = `${parentPath}/${segments[i + 1]}`
+      let childMap = childMaps.get(parentPath)
+      if (!childMap) {
+        childMap = new Map<string, ChildGroupEntry>()
+        childMaps.set(parentPath, childMap)
+      }
+      if (!childMap.has(fullPath)) {
+        childMap.set(fullPath, {
+          name: segments[i + 1],
+          fullPath,
+          order: groupOrder[fullPath] ?? 0,
+        })
+      }
+    }
+  })
+
+  childMaps.forEach((childMap, parentPath) => {
+    index.set(parentPath, Array.from(childMap.values()).sort((a, b) => a.order - b.order))
+  })
+
+  return index
+})
+
+const EMPTY_CHILD_GROUPS: ChildGroupEntry[] = []
+
 // 获取指定分组下的子分组（用于显示，已按排序显示）
-function getChildGroupsForDisplay(parentGroup: string) {
-  try {
-    const prefix = `${parentGroup}/`
-    const groupOrder = starStore.groupOrder || {}
-
-    const childMap = new Map<string, { name: string; fullPath: string; order: number }>()
-
-    starStore.groups
-      ?.filter((g: string) => g && g.startsWith(prefix))
-      ?.forEach((g: string) => {
-        const remainder = g.slice(prefix.length)
-        if (!remainder) return
-        const firstSegment = remainder.split('/')[0]
-        const fullPath = `${parentGroup}/${firstSegment}`
-        if (!childMap.has(fullPath)) {
-          childMap.set(fullPath, {
-            name: firstSegment,
-            fullPath,
-            order: groupOrder[fullPath] ?? 0,
-          })
-        }
-      })
-
-    return Array.from(childMap.values()).sort((a, b) => a.order - b.order)
-  } catch (error) {
-    console.error('Error getting child groups:', error)
-    return []
-  }
+function getChildGroupsForDisplay(parentGroup: string): ChildGroupEntry[] {
+  return childGroupsIndex.value.get(parentGroup) || EMPTY_CHILD_GROUPS
 }
 
 // 获取父分组路径（无父级则返回 null）
@@ -1067,34 +1075,66 @@ function canCreateChildGroup(group: string | null): boolean {
   return depth < maxDepth
 }
 
-function getGroupCount(group: string): number {
-  if (!group || !starStore.stars || starStore.stars.length === 0) {
-    return 0
+// 「分组 → 该分组及其所有子孙分组下的仓库数」索引。
+// 单次遍历 stars，把每个 star 命中的已声明分组的全部祖先路径各 +1（同一 star 用 Set 去重），
+// 等价于旧实现「star 的 groups 里含有 {group} 或以 `${group}/` 开头的已声明分组」的判定，
+// 但把每次调用的 O(仓库数 × 子孙分组数) 降为一次遍历 + O(1) 查表。
+const groupCountMap = computed(() => {
+  const counts = new Map<string, number>()
+  const stars = starStore.stars
+  if (!stars || stars.length === 0) {
+    return counts
   }
-
-  // 统计当前分组及所有子孙分组的仓库数量（去重）
-  const allGroupPaths = [group, ...starStore.groups.filter((g) => g && g.startsWith(`${group}/`))]
-
-  const uniqueStars = new Set<string>()
-  starStore.stars.forEach((star) => {
-    if (!star.groups) return
-    for (const groupPath of allGroupPaths) {
-      if (star.groups.includes(groupPath)) {
-        uniqueStars.add(star.id)
-        break
+  const declaredGroups = new Set(starStore.groups.filter(Boolean))
+  stars.forEach((star) => {
+    if (!star.groups || star.groups.length === 0) return
+    const matchedPaths = new Set<string>()
+    for (const groupPath of star.groups) {
+      if (!groupPath) continue
+      // 旧实现里被查询的分组总会被字面匹配（无论它是否已声明），所以 P 自身永远计入
+      matchedPaths.add(groupPath)
+      // 旧实现用 `g.startsWith(`${group}/`)` 把「已声明」的子孙分组算到祖先头上，
+      // 所以只有已声明的 P 才会把它的每一级祖先路径带进来；
+      // 用字符串切片取祖先（而不是按 / 拆段）才能与 startsWith 完全一致。
+      if (!declaredGroups.has(groupPath)) continue
+      let cut = groupPath.lastIndexOf('/')
+      while (cut > 0) {
+        const ancestor = groupPath.slice(0, cut)
+        matchedPaths.add(ancestor)
+        cut = ancestor.lastIndexOf('/')
       }
     }
+    matchedPaths.forEach((path) => {
+      counts.set(path, (counts.get(path) || 0) + 1)
+    })
   })
+  return counts
+})
 
-  return uniqueStars.size
+function getGroupCount(group: string): number {
+  if (!group) return 0
+  return groupCountMap.value.get(group) || 0
 }
+
+// 「标签 → 使用次数」索引，同样只需单次遍历 stars（标签在 addTag 中已去重，每个 star 内不会重复）
+const tagCountMap = computed(() => {
+  const counts = new Map<string, number>()
+  const stars = starStore.stars
+  if (!stars || stars.length === 0) {
+    return counts
+  }
+  stars.forEach((star) => {
+    if (!star.tags || star.tags.length === 0) return
+    for (const tag of star.tags) {
+      counts.set(tag, (counts.get(tag) || 0) + 1)
+    }
+  })
+  return counts
+})
 
 // 获取标签使用次数（普通标签）
 function getTagCount(tag: string): number {
-  if (!starStore.stars || starStore.stars.length === 0) {
-    return 0
-  }
-  return starStore.stars.filter((star) => star.tags && star.tags.includes(tag)).length
+  return tagCountMap.value.get(tag) || 0
 }
 
 // 获取所有语言（去重并统计）
@@ -1232,14 +1272,16 @@ function confirmDeleteTag() {
 }
 
 function confirmDeleteTagImmediate(tag: string) {
-  // 从所有仓库中移除该标签
+  // 从所有仓库中移除该标签。
+  // 这里直接改内存，而不是循环调用 starStore.removeTag：removeTag 每次都会做一次
+  // O(仓库数) 的 find 并各自触发一次 saveToLocal()，命中 K 个仓库就是 K 次全量查找 + K+1 次全表保存。
   starStore.stars.forEach((star) => {
-    if (star.tags.includes(tag)) {
-      starStore.removeTag(star.id, tag)
+    if (star.tags && star.tags.includes(tag)) {
+      star.tags = star.tags.filter((t) => t !== tag)
     }
   })
   
-  // 从标签列表中移除
+  // 从标签列表中移除（最后统一保存一次）
   starStore.tags = starStore.tags.filter((t) => t !== tag)
   starStore.saveToLocal()
   
@@ -1653,9 +1695,16 @@ function confirmCreateNewGroup() {
   }
 }
 
+// 延迟确认创建的定时器句柄。必须在取消创建/组件卸载时清掉，否则会出现：
+// blur 之后 200ms 内点击「+」新建（handleAddGroup 先 cancelCreateNewGroup 再设置新的 creatingGroup），
+// 旧定时器回调看到 creatingGroup 为真就调用 confirmCreateNewGroup，凭空多建一个 defaultGroupName 分组。
+let creatingBlurTimer: ReturnType<typeof setTimeout> | null = null
+
 function handleBlurCreatingGroup() {
   // 延迟处理，以便点击其他按钮时能正常响应
-  setTimeout(() => {
+  if (creatingBlurTimer) clearTimeout(creatingBlurTimer)
+  creatingBlurTimer = setTimeout(() => {
+    creatingBlurTimer = null
     if (creatingGroup.value) {
       confirmCreateNewGroup()
     }
@@ -1663,10 +1712,22 @@ function handleBlurCreatingGroup() {
 }
 
 function cancelCreateNewGroup() {
+  if (creatingBlurTimer) {
+    clearTimeout(creatingBlurTimer)
+    creatingBlurTimer = null
+  }
   creatingGroup.value = null
   creatingGroupName.value = ''
   errorMessage.value = ''
 }
+
+// 组件卸载（例如切换路由）时也要清掉挂起的定时器，避免对已卸载组件的 store 写入
+onUnmounted(() => {
+  if (creatingBlurTimer) {
+    clearTimeout(creatingBlurTimer)
+    creatingBlurTimer = null
+  }
+})
 
 
 // 拖拽开始
@@ -1865,16 +1926,6 @@ async function handleDrop(event: DragEvent, targetGroup: string, isChild: boolea
     newGroups.splice(newIndex, 0, dragged)
     
     // 调试：检查结果
-    console.log('[拖拽排序]', {
-      draggedGroup: draggedGroup.value,
-      targetGroup,
-      draggedIndex,
-      targetIndex,
-      dragPosition: dragPosition.value,
-      newIndex,
-      originalOrder: sameLevelGroups,
-      newOrder: newGroups
-    })
     
     // 更新排序值
     const updatedGroupOrder = { ...groupOrder }
@@ -1887,7 +1938,6 @@ async function handleDrop(event: DragEvent, targetGroup: string, isChild: boolea
     
     // 保存到数据库（不调用 saveToLocal，避免事务嵌套）
     try {
-      const { saveGroupOrderToDb } = await import('../utils/database')
       await saveGroupOrderToDb(updatedGroupOrder)
     } catch (error) {
       console.error('保存分组排序失败:', error)
@@ -1967,7 +2017,6 @@ async function handleContainerDrop(event: DragEvent) {
     
     // 保存到数据库（不调用 saveToLocal，避免事务嵌套）
     try {
-      const { saveGroupOrderToDb } = await import('../utils/database')
       await saveGroupOrderToDb(updatedGroupOrder)
   } catch (error) {
       console.error('保存分组排序失败:', error)
@@ -2046,7 +2095,6 @@ async function handleChildContainerDrop(event: DragEvent, parentGroup: string) {
     
     // 保存到数据库（不调用 saveToLocal，避免事务嵌套）
     try {
-      const { saveGroupOrderToDb } = await import('../utils/database')
       await saveGroupOrderToDb(updatedGroupOrder)
   } catch (error) {
       console.error('保存分组排序失败:', error)

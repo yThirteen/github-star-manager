@@ -395,7 +395,6 @@ async function handleTestClassifyApi() {
         valueOrEmpty(formData.value.apiUrl),
         valueOrEmpty(formData.value.model)
       )
-      console.log(t('modals.apiItem.logs.classifyResult'), result)
     },
     () => t('modals.apiItem.messages.testClassifySuccess'),
     (errorMsg) => t('modals.apiItem.messages.testClassifyFailure', { error: errorMsg })

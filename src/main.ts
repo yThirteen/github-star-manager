@@ -43,14 +43,16 @@ if (typeof window !== 'undefined') {
   }
 
   window.addEventListener('error', (event) => {
-    const detail = event.error?.stack || event.message || '未知错误'
-    console.error('全局错误:', detail)
+    // 弹窗只给可读的一句错误信息，完整堆栈留在控制台里方便排查
+    const detail = event.error?.message || event.message || '未知错误'
+    console.error('全局错误:', event.error?.stack || detail)
     notifyFatalError(`检测到未处理的错误:\n${detail}`)
   })
 
   window.addEventListener('unhandledrejection', (event) => {
-    const reason = (event.reason && (event.reason.stack || event.reason.message)) || String(event.reason)
-    console.error('未处理的 Promise 拒绝:', reason)
+    // 同上：优先展示 message，堆栈只在控制台输出
+    const reason = (event.reason && (event.reason.message || event.reason.stack)) || String(event.reason)
+    console.error('未处理的 Promise 拒绝:', event.reason?.stack || reason)
     notifyFatalError(`检测到未处理的 Promise 拒绝:\n${reason}`)
   })
 }
@@ -103,7 +105,6 @@ async function bootstrapApp() {
   })
 
   app.mount('#app')
-  console.log('✅ Vue 应用已挂载')
 
   // 每天第一次启动时检查 token 有效性
   checkTokenOnStartup().then((error) => {
@@ -116,18 +117,6 @@ async function bootstrapApp() {
   }).catch((error) => {
     console.error('Token 检查失败:', error)
   })
-
-  // 检查 Tauri 是否可用
-  if (typeof window !== 'undefined') {
-    setTimeout(() => {
-      console.log('检查 Tauri 环境...')
-      console.log('window.__TAURI__:', typeof window.__TAURI__)
-      console.log('window.__TAURI_INTERNALS__:', typeof window.__TAURI_INTERNALS__)
-      if (window.__TAURI__?.core) {
-        console.log('✅ window.__TAURI__.core 可用')
-      }
-    }, 1000)
-  }
 }
 
 // 启动应用

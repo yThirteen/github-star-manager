@@ -2,6 +2,8 @@
  * AI 功能工具函数
  */
 
+import { invoke } from '@tauri-apps/api/core'
+
 /**
  * 翻译文本
  * @param text 要翻译的文本
@@ -21,9 +23,6 @@ export async function translateText(
   model?: string
 ): Promise<string> {
   try {
-    // 动态导入 invoke，确保在 Tauri 环境中可用
-    const { invoke } = await import('@tauri-apps/api/core')
-    console.log('调用翻译函数，参数：', { text, targetLang, apiType, apiKey, apiUrl, model })
     const translated = await invoke<string>('translate_text', {
       text: text.trim(),
       targetLang: targetLang,
@@ -32,7 +31,6 @@ export async function translateText(
       apiUrl: apiUrl || null,
       model: model || null,
     })
-    console.log('翻译结果:', translated)
     return translated
   } catch (error) {
     console.error('翻译失败:', error)
@@ -71,8 +69,6 @@ export async function classifyRepository(
   promptOverride?: string
 ): Promise<string> {
   try {
-    const { invoke } = await import('@tauri-apps/api/core')
-    console.log('调用分类函数，参数：', { repoName, description, existingGroups, apiType, apiKey, apiUrl, model })
     const suggestedGroup = await invoke<string>('classify_repository', {
       repoName: repoName.trim(),
       description: description || null,
@@ -83,7 +79,6 @@ export async function classifyRepository(
       model: model || null,
       promptOverride: promptOverride || null,
     })
-    console.log('分类结果:', suggestedGroup)
 
     return suggestedGroup
   } catch (error) {
@@ -116,7 +111,6 @@ export async function classifyGroupsHierarchy(
   }
 
   try {
-    const { invoke } = await import('@tauri-apps/api/core')
     const response = await invoke<GroupParent[]>('classify_groups_hierarchy', {
       groups,
       apiType: apiType,
@@ -132,28 +126,6 @@ export async function classifyGroupsHierarchy(
     }
     throw new Error('批量分组层级归类失败，请稍后重试')
   }
-}
-
-/**
- * 检测文本语言（简化版，返回可能的主要语言）
- * 注意：这是基于启发式的方法，不是真正的语言检测
- */
-export function detectLanguage(text: string): string {
-  // 简单的语言检测启发式方法
-  // 检测中文字符
-  if (/[\u4e00-\u9fa5]/.test(text)) {
-    return 'zh'
-  }
-  // 检测日文字符
-  if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) {
-    return 'ja'
-  }
-  // 检测韩文字符
-  if (/[\uac00-\ud7a3]/.test(text)) {
-    return 'ko'
-  }
-  // 默认英文
-  return 'en'
 }
 
 /**

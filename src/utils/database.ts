@@ -2,8 +2,9 @@
  * SQLite 数据库工具函数（通过 Rust 后端）
  */
 
-// import { invoke } from '@tauri-apps/api/core'
-// 改为动态导入以避免混合导入警告
+// 静态导入：动态 import 反而会触发 "同时被静态与动态导入，dynamic import will not
+// move module into another chunk" 警告（其他模块本就静态导入了 @tauri-apps/api/core）。
+import { invoke } from '@tauri-apps/api/core'
 import type { StarItem, SyncMetadata } from '../types/star'
 import type { ApiItem, AIModuleConfig } from '../types/ai'
 
@@ -15,7 +16,7 @@ export interface GithubTokenInfo {
   username?: string
 }
 
-export interface GithubTokenVerificationResult {
+interface GithubTokenVerificationResult {
   valid: boolean
   username?: string
   scopes?: string[]
@@ -42,49 +43,16 @@ export function isTauriAvailable(): boolean {
 }
 
 /**
- * 获取动态导入的 invoke 函数
- */
-async function getInvoke() {
-  const { invoke } = await import('@tauri-apps/api/core')
-  return invoke
-}
-
-
-/**
- * 初始化数据库（由 Rust 端在启动时自动完成）
- */
-export async function initDatabase(): Promise<void> {
-  console.log('数据库已由 Rust 端初始化')
-}
-
-
-/**
  * 加载所有 stars
  */
 export async function loadStarsFromDb(): Promise<StarItem[]> {
   if (!isTauriAvailable()) return []
   
   try {
-    const invoke = await getInvoke()
     return await invoke<StarItem[]>('load_stars')
   } catch (error) {
     console.error('加载 stars 失败:', error)
     return []
-  }
-}
-
-/**
- * 保存单个 star
- */
-export async function saveStarToDb(star: StarItem): Promise<void> {
-  if (!isTauriAvailable()) return
-  
-  try {
-    const invoke = await getInvoke()
-    await invoke('save_star', { star })
-  } catch (error) {
-    console.error('保存 star 失败:', error)
-    throw error
   }
 }
 
@@ -95,19 +63,11 @@ export async function saveStarsToDb(stars: StarItem[]): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_stars_batch', { stars })
   } catch (error) {
     console.error('批量保存 stars 失败:', error)
     throw error
   }
-}
-
-/**
- * 批量保存 stars（内部版本，保持接口兼容性）
- */
-export async function saveStarsToDbInternal(stars: StarItem[], _database?: any): Promise<void> {
-  await saveStarsToDb(stars)
 }
 
 /**
@@ -117,7 +77,6 @@ export async function deleteStarFromDb(starId: string): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('delete_star', { id: starId })
   } catch (error) {
     console.error('删除 star 失败:', error)
@@ -134,7 +93,6 @@ export async function loadMetaFromDb(): Promise<SyncMetadata> {
   }
   
   try {
-    const invoke = await getInvoke()
     return await invoke<SyncMetadata>('load_metadata')
   } catch (error) {
     console.error('加载元数据失败:', error)
@@ -149,19 +107,11 @@ export async function saveMetaToDb(meta: SyncMetadata): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_metadata', { meta })
   } catch (error) {
     console.error('保存元数据失败:', error)
     throw error
   }
-}
-
-/**
- * 保存同步元数据（内部版本，保持接口兼容性）
- */
-export async function saveMetaToDbInternal(meta: SyncMetadata, _database?: any): Promise<void> {
-  await saveMetaToDb(meta)
 }
 
 /**
@@ -171,7 +121,6 @@ export async function loadGroupOrderFromDb(): Promise<Record<string, number>> {
   if (!isTauriAvailable()) return {}
   
   try {
-    const invoke = await getInvoke()
     return await invoke<Record<string, number>>('load_group_order')
   } catch (error) {
     console.error('加载分组排序失败:', error)
@@ -186,19 +135,11 @@ export async function saveGroupOrderToDb(groupOrder: Record<string, number>): Pr
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_group_order', { order: groupOrder })
   } catch (error) {
     console.error('保存分组排序失败:', error)
     throw error
   }
-}
-
-/**
- * 保存分组排序信息（内部版本，保持接口兼容性）
- */
-export async function saveGroupOrderToDbInternal(groupOrder: Record<string, number>, _database?: any): Promise<void> {
-  await saveGroupOrderToDb(groupOrder)
 }
 
 /**
@@ -208,7 +149,6 @@ export async function loadGroupsFromDb(): Promise<string[]> {
   if (!isTauriAvailable()) return []
   
   try {
-    const invoke = await getInvoke()
     return await invoke<string[]>('load_groups')
   } catch (error) {
     console.error('加载 groups 失败:', error)
@@ -223,19 +163,11 @@ export async function saveGroupsToDb(groups: string[]): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_groups', { groups })
   } catch (error) {
     console.error('保存 groups 失败:', error)
     throw error
   }
-}
-
-/**
- * 保存 groups（内部版本，保持接口兼容性）
- */
-export async function saveGroupsToDbInternal(groups: string[], _database?: any): Promise<void> {
-  await saveGroupsToDb(groups)
 }
 
 /**
@@ -245,7 +177,6 @@ export async function loadTagsFromDb(): Promise<string[]> {
   if (!isTauriAvailable()) return []
   
   try {
-    const invoke = await getInvoke()
     return await invoke<string[]>('load_tags')
   } catch (error) {
     console.error('加载 tags 失败:', error)
@@ -260,19 +191,11 @@ export async function saveTagsToDb(tags: string[]): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_tags', { tags })
   } catch (error) {
     console.error('保存 tags 失败:', error)
     throw error
   }
-}
-
-/**
- * 保存 tags（内部版本，保持接口兼容性）
- */
-export async function saveTagsToDbInternal(tags: string[], _database?: any): Promise<void> {
-  await saveTagsToDb(tags)
 }
 
 /**
@@ -286,7 +209,6 @@ export async function loadApiItemsFromDb(): Promise<ApiItem[]> {
   if (!isTauriAvailable()) return []
   
   try {
-    const invoke = await getInvoke()
     return await invoke<ApiItem[]>('load_api_items')
   } catch (error) {
     console.error('加载 API 配置失败:', error)
@@ -316,7 +238,6 @@ export async function saveApiItemToDb(api: ApiItem): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_api_item', { api })
   } catch (error) {
     console.error('保存 API 配置失败:', error)
@@ -331,7 +252,6 @@ export async function deleteApiItemFromDb(id: string): Promise<void> {
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('delete_api_item', { id })
   } catch (error) {
     console.error('删除 API 配置失败:', error)
@@ -346,7 +266,6 @@ export async function loadAIModuleConfigsFromDb(): Promise<AIModuleConfig[]> {
   if (!isTauriAvailable()) return []
   
   try {
-    const invoke = await getInvoke()
     return await invoke<AIModuleConfig[]>('load_ai_module_configs')
   } catch (error) {
     console.error('加载 AI 模块配置失败:', error)
@@ -376,7 +295,6 @@ export async function saveAIModuleConfigToDb(config: AIModuleConfig): Promise<vo
   if (!isTauriAvailable()) return
   
   try {
-    const invoke = await getInvoke()
     await invoke('save_ai_module_config', { config })
   } catch (error) {
     console.error('保存 AI 模块配置失败:', error)
@@ -394,7 +312,6 @@ export async function loadGithubTokenFromDb(): Promise<GithubTokenInfo | null> {
   }
 
   try {
-    const invoke = await getInvoke()
     return await invoke<GithubTokenInfo | null>('load_github_token')
   } catch (error) {
     console.error('加载 GitHub Token 失败:', error)
@@ -408,7 +325,6 @@ export async function saveGithubTokenToDb(info: GithubTokenInfo): Promise<void> 
   }
 
   try {
-    const invoke = await getInvoke()
     await invoke('save_github_token', { info })
   } catch (error) {
     console.error('保存 GitHub Token 失败:', error)
@@ -422,7 +338,6 @@ export async function deleteGithubTokenFromDb(): Promise<void> {
   }
 
   try {
-    const invoke = await getInvoke()
     await invoke('delete_github_token')
   } catch (error) {
     console.error('删除 GitHub Token 失败:', error)
@@ -436,7 +351,6 @@ export async function verifyGithubTokenViaBackend(token: string): Promise<Github
   }
 
   try {
-    const invoke = await getInvoke()
     const result = await invoke<GithubTokenVerificationResult>('verify_github_token', { token })
     return {
       valid: result.valid,
@@ -454,10 +368,3 @@ export async function verifyGithubTokenViaBackend(token: string): Promise<Github
   }
 }
 
-/**
- * @deprecated 数据库实例由 Rust 管理
- */
-export async function getDatabase(): Promise<any> {
-  console.warn('getDatabase() 已废弃，数据库由 Rust 后端管理')
-  return null
-}

@@ -2,8 +2,12 @@
  * 内置配置初始化工具
  */
 
-// import { createApiItem } from './aiConfig'
-// 改为动态导入以避免混合导入警告
+import {
+  createApiItem,
+  getAllApiItems,
+  getAllModuleConfigs,
+  saveModuleConfig,
+} from './aiConfig'
 import type { ApiItem, AIModuleConfig } from '../types/ai'
 
 /**
@@ -32,7 +36,6 @@ const BUILTIN_TRANSLATE_MODULE_CONFIG: AIModuleConfig = {
  */
 async function hasBuiltinGoogleTranslate(): Promise<boolean> {
   try {
-    const { getAllApiItems } = await import('./aiConfig')
     const apis = await getAllApiItems()
     return apis.some(api => 
       api.apiType === 'google' && 
@@ -50,7 +53,6 @@ async function hasBuiltinGoogleTranslate(): Promise<boolean> {
  */
 async function hasTranslateModuleConfig(): Promise<boolean> {
   try {
-    const { getAllModuleConfigs } = await import('./aiConfig')
     const configs = await getAllModuleConfigs()
     return configs.some(config => config.module === 'translate' && config.enabled)
   } catch (error) {
@@ -62,7 +64,7 @@ async function hasTranslateModuleConfig(): Promise<boolean> {
 /**
  * 初始化内置的谷歌翻译API配置
  */
-export async function initBuiltinGoogleTranslate(): Promise<void> {
+async function initBuiltinGoogleTranslate(): Promise<void> {
   try {
     // 如果已经存在内置配置，则跳过
     if (await hasBuiltinGoogleTranslate()) {
@@ -70,13 +72,11 @@ export async function initBuiltinGoogleTranslate(): Promise<void> {
     }
 
     // 创建内置API配置
-    const { createApiItem } = await import('./aiConfig')
     const googleApi = await createApiItem(BUILTIN_GOOGLE_TRANSLATE_API)
 
     // 检查翻译模块配置
     if (!(await hasTranslateModuleConfig())) {
       // 配置翻译模块使用内置的Google API
-      const { saveModuleConfig } = await import('./aiConfig')
       const translateConfig: AIModuleConfig = {
         ...BUILTIN_TRANSLATE_MODULE_CONFIG,
         apiId: googleApi.id,

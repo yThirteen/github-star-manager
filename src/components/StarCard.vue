@@ -589,9 +589,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { open as openUrl } from '@tauri-apps/plugin-shell'
+import { invoke } from '@tauri-apps/api/core'
 import type { StarItem } from '../types/star'
 import { useStarStore } from '../stores/starStore'
 import { useUIStore } from '../stores/uiStore'
@@ -1105,13 +1106,20 @@ function cancelEditNotes() {
 }
 
 // 点击外部区域时保存描述
+// 卸载时取消这个延迟保存，否则卡片已销毁仍会 emit('update-notes')，让父组件对一个已消失的星标写库
+let blurSaveTimer: ReturnType<typeof setTimeout> | null = null
+
 function saveNotesOnBlur() {
   // 如果正在启动编辑模式，不保存
   if (isStartingEdit.value) {
     return
   }
+  if (blurSaveTimer !== null) {
+    clearTimeout(blurSaveTimer)
+  }
   // 延迟检查，确保点击事件已处理完成
-  setTimeout(() => {
+  blurSaveTimer = setTimeout(() => {
+    blurSaveTimer = null
     // 再次检查状态和标记，防止在 startEditNotes 调用时误触发
     if (isEditingNotes.value && !isStartingEdit.value) {
       // 自动保存（不做空值检查，允许清空描述）
@@ -1119,6 +1127,13 @@ function saveNotesOnBlur() {
     }
   }, 100)
 }
+
+onUnmounted(() => {
+  if (blurSaveTimer !== null) {
+    clearTimeout(blurSaveTimer)
+    blurSaveTimer = null
+  }
+})
 
 const emit = defineEmits<{
   'tag-click': [tag: string, isLanguage?: boolean]
@@ -1146,32 +1161,25 @@ async function openLink(url: string) {
       throw new Error('无效的 URL 格式')
     }
     
-    console.log('尝试打开 URL:', url)
     
     // 检查是否在 Tauri 环境中
     const isTauri = typeof window !== 'undefined' && 
                     (window.__TAURI__ || window.__TAURI_INTERNALS__)
     
     if (isTauri) {
-      console.log('Tauri 环境检测成功')
       
       // 优先尝试使用系统命令（更可靠）
       try {
-        console.log('尝试使用系统命令打开 URL')
-        const { invoke } = await import('@tauri-apps/api/core')
         await invoke('open_url', { url })
-        console.log('通过系统命令打开 URL 成功')
         return
       } catch (systemError: any) {
         console.error('系统命令失败:', systemError)
         // 如果系统命令失败，尝试使用 shell 插件
-        console.log('尝试使用 Tauri shell.open 插件')
       }
       
       // 备用方案：使用 Tauri shell 插件
       try {
         await openUrl(url)
-        console.log('通过 shell.open 打开 URL 成功')
         return
       } catch (tauriError: any) {
         console.error('Tauri shell.open 失败:', tauriError)
@@ -1184,9 +1192,7 @@ async function openLink(url: string) {
     // 最后的降级方案：使用 window.open
     if (typeof window !== 'undefined') {
       const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
-      if (newWindow) {
-        console.log('URL 打开成功（通过浏览器原生方法）')
-      } else {
+      if (!newWindow) {
         console.warn('window.open 返回 null，可能被浏览器阻止')
         throw new Error('浏览器阻止了弹窗，请在浏览器设置中允许此网站的弹窗')
       }
@@ -1294,7 +1300,6 @@ async function copySavedTranslation() {
       document.execCommand('copy')
       document.body.removeChild(textArea)
     }
-    console.log('翻译已复制到剪贴板')
   } catch (error) {
     console.error('复制失败:', error)
     prompt('复制翻译结果（按 Ctrl+C 复制）:', props.star.translated_description)

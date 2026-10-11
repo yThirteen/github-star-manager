@@ -5,9 +5,6 @@
     "cancel": "Cancel",
     "save": "Save",
     "close": "Close",
-    "language": "Language",
-    "light": "Light mode",
-    "dark": "Dark mode",
     "create": "Create",
     "edit": "Edit",
     "delete": "Delete",
@@ -113,12 +110,7 @@
       },
       "errors": {
         "nameRequired": "Please enter an API name",
-        "delete": {
-          "title": "Delete repository",
-          "message": "Delete <span class=\"font-semibold\">{name}</span>?",
-          "warning": "This action cannot be undone.",
-          "confirm": "Delete"
-        }
+        "delete": {}
       }
     },
     "customApi": {
@@ -334,7 +326,7 @@
         }
       }
     },
-      "dataManagement": {
+    "dataManagement": {
       "title": "Data Management",
       "subtitle": "Import and export backups",
       "sections": {
@@ -371,19 +363,7 @@
           "needSelect": "Please select at least one item to export.",
           "confirm": "Confirm export"
         },
-        "clearFirst": {
-          "title": "Warning: this will delete all data!",
-          "intro": "The following will be removed:",
-          "items": [
-            "All synced repositories",
-            "All tags",
-            "All folders",
-            "All metadata"
-          ],
-          "warning": "This action cannot be undone.",
-          "question": "Do you want to continue?",
-          "confirm": "Continue"
-        },
+        "clearFirst": {},
         "clearSelect": {
           "title": "Choose what to clear",
           "subtitle": "This cannot be undone—select carefully",
@@ -402,12 +382,7 @@
           "needSelect": "Please select at least one item to clear.",
           "confirm": "Confirm clear"
         },
-        "clearSecond": {
-          "title": "Final confirmation",
-          "message": "Are you sure you want to clear all data?",
-          "warning": "This will delete everything in the app!",
-          "confirm": "Confirm clear"
-        },
+        "clearSecond": {},
         "importConfirm": {
           "title": "Confirm data import",
           "intro": "Import the selected data?",
@@ -438,10 +413,7 @@
       "language": {
         "title": "Interface language",
         "description": "Choose the language shown in the app",
-        "options": {
-          "zh-CN": "Simplified Chinese",
-          "en": "English"
-        }
+        "options": {}
       },
       "languageOptions": {
         "zh-CN": "Simplified Chinese",
@@ -819,9 +791,6 @@
   },
   "starCard": {
     "groups": {
-      "move": "Move to folder",
-      "noGroup": "Remove from folder",
-      "placeholder": "Select a folder",
       "create": "Create new folder",
       "empty": "No available folders",
       "alreadyJoined": "Already added"
@@ -882,11 +851,7 @@
         "warning": "This action cannot be undone.",
         "confirm": "Delete"
       },
-      "removeGroup": {
-        "title": "Remove from folder",
-        "message": "Remove this repository from the folder <span class=\"font-semibold\">{group}</span>?"
-      }
+      "removeGroup": {}
     }
-    
   }
 }

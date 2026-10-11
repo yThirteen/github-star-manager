@@ -13,17 +13,8 @@ import {
   type LanguageName,
   LANGUAGE_CODES,
 } from '../utils/ai'
-// import { getModuleConfig, getApiItemById } from '../utils/aiConfig'
-// 改为动态导入以避免混合导入警告
+import { getModuleConfig, getApiItemById } from '../utils/aiConfig'
 import type { StarItem } from '../types/star'
-
-/**
- * 获取动态导入的 AI 配置函数
- */
-async function getAIConfig() {
-  const { getModuleConfig, getApiItemById } = await import('../utils/aiConfig')
-  return { getModuleConfig, getApiItemById }
-}
 
 export function useAI() {
   const starStore = useStarStore()
@@ -43,7 +34,6 @@ export function useAI() {
   // 文件夹分类次数控制：最多进行 (maxFolderDepth - 1) 次
   const refineAttempts = ref(0)
   const maxRefineRounds = computed(() => {
-    // console.log('starStore.maxFolderDepth', starStore.maxFolderDepth)
     const depth = starStore.maxFolderDepth ?? 3
     return Math.max(0, depth - 1)
   })
@@ -73,7 +63,6 @@ export function useAI() {
           ? LANGUAGE_CODES[targetLang as LanguageName]
           : targetLang
 
-      const { getModuleConfig, getApiItemById } = await getAIConfig()
       const moduleConfig = await getModuleConfig('translate')
       if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
         throw new Error('请先在设置中配置并启用翻译 API')
@@ -161,7 +150,6 @@ export function useAI() {
     classificationError.value = null
 
     try {
-      const { getModuleConfig, getApiItemById } = await getAIConfig()
       const moduleConfig = await getModuleConfig('classify')
       if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
         throw new Error('请先在设置中配置并启用分类 API')
@@ -308,7 +296,6 @@ export function useAI() {
     refineAttempts.value = 0
 
     try {
-      const { getModuleConfig, getApiItemById } = await getAIConfig()
       const moduleConfig = await getModuleConfig('classify')
       if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
         throw new Error('请先在设置中配置并启用分类 API')
@@ -396,7 +383,6 @@ export function useAI() {
     isCancelling.value = false
 
     try {
-      const { getModuleConfig, getApiItemById } = await getAIConfig()
       const moduleConfig = await getModuleConfig('classify')
       if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
         throw new Error('请先在设置中配置并启用分类 API')

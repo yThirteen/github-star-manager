@@ -4,7 +4,7 @@
 
 import { invoke } from '@tauri-apps/api/core'
 
-export interface ClearOptions {
+interface ClearOptions {
   starData: boolean
   apiConfig: boolean
 }
@@ -30,9 +30,3 @@ export async function clearData(options: ClearOptions): Promise<void> {
 
   await invoke('clear_data', { options: { star_data: starData, api_config: apiConfig } })
 }
-
-// 兼容旧调用
-export async function clearAllData(): Promise<void> {
-  await clearData({ starData: true, apiConfig: true })
-}
-

@@ -28,12 +28,6 @@ export interface ReleaseInfo {
   html_url?: string
 }
 
-export interface StarMetadata {
-  tags: string[]
-  groups: string[]
-  notes: string
-}
-
 export interface SyncMetadata {
   last_sync: string
   total_count: number
