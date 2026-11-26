@@ -4,14 +4,14 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ApiItem, AIModuleConfig, AIModule } from '../types/ai'
+import type { ApiItem } from '../types/ai'
 import {
   getAllApiItems,
   createApiItem,
   updateApiItem,
   deleteApiItem,
-  getAllModuleConfigs,
-  saveModuleConfig,
+  getDefaultProviderId,
+  setDefaultProviderId,
 } from '../utils/aiConfig'
 import { resolveLocale, type AppLocale } from '../plugins/i18n'
 
@@ -49,9 +49,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const maxFolderDepth = ref<number>(DEFAULT_MAX_FOLDER_DEPTH)
   const language = ref<AppLocale>(resolveLocale(typeof navigator !== 'undefined' ? navigator.language : 'zh-CN'))
   
-  // API 配置
+  // API 供应商
   const apiItems = ref<ApiItem[]>([])
-  const moduleConfigs = ref<AIModuleConfig[]>([])
+  const defaultProviderId = ref<string>(getDefaultProviderId())
   const isLoadingApis = ref(false)
 
   // AI 分类相关全局设置
@@ -88,12 +88,7 @@ export const useSettingsStore = defineStore('settings', () => {
     
     isLoadingApis.value = true
     try {
-      const [apis, configs] = await Promise.all([
-        getAllApiItems(),
-        getAllModuleConfigs(),
-      ])
-      apiItems.value = apis
-      moduleConfigs.value = configs
+      apiItems.value = await getAllApiItems()
     } catch (error) {
       console.error('加载 AI 配置失败:', error)
     } finally {
@@ -114,9 +109,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // 添加 API
   async function addApiItem(api: Omit<ApiItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiItem> {
     const newApi = await createApiItem(api)
-    apiItems.value.push(newApi)
-    // 刷新模块配置，确保引用到最新的 API 列表
-    moduleConfigs.value = await getAllModuleConfigs()
+    apiItems.value.unshift(newApi)
     return newApi
   }
   
@@ -128,8 +121,6 @@ export const useSettingsStore = defineStore('settings', () => {
       if (index !== -1) {
         apiItems.value[index] = updated
       }
-      // 更新后刷新模块配置，避免引用过期
-      moduleConfigs.value = await getAllModuleConfigs()
     }
     return updated
   }
@@ -139,27 +130,18 @@ export const useSettingsStore = defineStore('settings', () => {
     const success = await deleteApiItem(id)
     if (success) {
       apiItems.value = apiItems.value.filter(api => api.id !== id)
-      // 重新加载模块配置（因为可能有模块引用了该 API）
-      moduleConfigs.value = await getAllModuleConfigs()
+      // 删除的正好是默认供应商时，同步清掉默认设置
+      if (defaultProviderId.value === id) {
+        setDefaultProviderId_store(null)
+      }
     }
     return success
   }
-  
-  // 获取所有模块配置
-  function getModuleConfigs(): AIModuleConfig[] {
-    return moduleConfigs.value
-  }
-  
-  // 获取指定模块的配置
-  function getModuleConfig_sync(module: AIModule): AIModuleConfig | undefined {
-    return moduleConfigs.value.find(c => c.module === module)
-  }
-  
-  // 保存模块配置
-  async function saveModuleConfig_store(config: AIModuleConfig): Promise<void> {
-    await saveModuleConfig(config)
-    // 从数据库重新拉取，避免本地状态与存储不一致
-    moduleConfigs.value = await getAllModuleConfigs()
+
+  // 设置默认供应商（AI 调用优先使用它）
+  function setDefaultProviderId_store(id: string | null) {
+    setDefaultProviderId(id)
+    defaultProviderId.value = id ?? ''
   }
 
   // 设置 AI 分类并发
@@ -264,7 +246,7 @@ export const useSettingsStore = defineStore('settings', () => {
     skipStarDeltaPrompt,
     starDeltaAutoShow,
     apiItems,
-    moduleConfigs,
+    defaultProviderId,
     isLoadingApis,
     init,
     loadAIConfigs,
@@ -284,10 +266,8 @@ export const useSettingsStore = defineStore('settings', () => {
     addApiItem,
     updateApiItem_store,
     deleteApiItem_store,
-    // 模块配置管理
-    getModuleConfigs,
-    getModuleConfig_sync,
-    saveModuleConfig_store,
+    // 默认供应商
+    setDefaultProviderId_store,
     // AI 分类设置
     classifyConcurrency,
     classifyPromptTemplate,

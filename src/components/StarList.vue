@@ -481,6 +481,14 @@
                   :placeholder="t('starList.ai.config.fields.concurrency.placeholder')" />
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('starList.ai.config.fields.concurrency.hint') }}</p>
               </div>
+
+              <div class="space-y-2 md:col-span-2">
+                <label class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ t('starList.ai.config.fields.prompt.label') }}</label>
+                <textarea rows="5" v-model="tempPrompt"
+                  class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-xs leading-5"
+                  :placeholder="t('starList.ai.config.fields.prompt.placeholder')"></textarea>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('starList.ai.config.fields.prompt.hint') }}</p>
+              </div>
             </div>
             <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
               <div class="flex flex-wrap items-center gap-2">
@@ -592,6 +600,7 @@ const {
   isCancelling,
   refineAttempts,
   maxRefineRounds,
+  refineLimitReached,
 } = useAI()
 const { confirm, alert } = useDialog()
 const settingsStore = useSettingsStore()
@@ -1239,7 +1248,7 @@ async function handleRefineClassification() {
       return
     }
 
-    const overLimit = classificationError.value?.includes('已达到最大文件夹分类次数限制')
+    const overLimit = refineLimitReached.value
     const currentTopLevelCount = results.size > 0
       ? countTopLevelGroups(results)
       : countTopLevelGroups(previewResults.value)

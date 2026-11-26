@@ -33,6 +33,7 @@ fn main() {
             translate_text,
             classify_repository,
             classify_groups_hierarchy,
+            list_provider_models,
             // 数据库 - Stars
             load_stars,
             save_star,
@@ -58,9 +59,6 @@ fn main() {
             load_api_items,
             save_api_item,
             delete_api_item,
-            // 数据库 - AI Module Configs
-            load_ai_module_configs,
-            save_ai_module_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

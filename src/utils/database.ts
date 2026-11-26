@@ -6,7 +6,7 @@
 // move module into another chunk" 警告（其他模块本就静态导入了 @tauri-apps/api/core）。
 import { invoke } from '@tauri-apps/api/core'
 import type { StarItem, SyncMetadata } from '../types/star'
-import type { ApiItem, AIModuleConfig } from '../types/ai'
+import type { ApiItem } from '../types/ai'
 
 export interface GithubTokenInfo {
   token: string
@@ -255,49 +255,6 @@ export async function deleteApiItemFromDb(id: string): Promise<void> {
     await invoke('delete_api_item', { id })
   } catch (error) {
     console.error('删除 API 配置失败:', error)
-    throw error
-  }
-}
-
-/**
- * 加载所有 AI 模块配置
- */
-export async function loadAIModuleConfigsFromDb(): Promise<AIModuleConfig[]> {
-  if (!isTauriAvailable()) return []
-  
-  try {
-    return await invoke<AIModuleConfig[]>('load_ai_module_configs')
-  } catch (error) {
-    console.error('加载 AI 模块配置失败:', error)
-    return []
-  }
-}
-
-/**
- * 根据模块加载 AI 模块配置
- */
-export async function loadAIModuleConfigByModuleFromDb(module: string): Promise<AIModuleConfig | null> {
-  if (!isTauriAvailable()) return null
-  
-  try {
-    const configs = await loadAIModuleConfigsFromDb()
-    return configs.find(config => config.module === module) || null
-  } catch (error) {
-    console.error('加载 AI 模块配置失败:', error)
-    return null
-  }
-}
-
-/**
- * 保存 AI 模块配置
- */
-export async function saveAIModuleConfigToDb(config: AIModuleConfig): Promise<void> {
-  if (!isTauriAvailable()) return
-  
-  try {
-    await invoke('save_ai_module_config', { config })
-  } catch (error) {
-    console.error('保存 AI 模块配置失败:', error)
     throw error
   }
 }

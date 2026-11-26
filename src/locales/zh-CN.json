@@ -6,7 +6,6 @@
     "save": "保存",
     "close": "关闭",
     "create": "创建",
-    "edit": "编辑",
     "delete": "删除",
     "dontAskAgain": "不再询问",
     "open": "打开"
@@ -47,96 +46,82 @@
     }
   },
   "status": {
+    "loading": "加载中...",
     "testing": "测试中...",
-    "saving": "保存中...",
     "exporting": "导出中...",
     "importing": "导入中...",
     "clearing": "清除中..."
   },
   "modals": {
-    "apiItem": {
+    "provider": {
       "title": {
-        "create": "添加 API",
-        "edit": "编辑 API"
+        "create": "添加供应商",
+        "edit": "编辑供应商"
       },
-      "subtitle": "配置 API 的详细信息",
+      "subtitle": "填写供应商的接口信息，通常只需要一个 API 密钥",
+      "presetLabel": "提供方",
+      "presetPlaceholder": "选择提供方",
+      "sections": {
+        "advanced": "自定义设置"
+      },
       "fields": {
-        "apiType": "API 类型",
-        "apiName": "API 名称",
-        "apiKey": "API Key",
+        "apiKey": "API 密钥",
+        "name": "显示名称",
+        "apiType": "API 协议",
         "apiUrl": "API 地址",
         "model": "模型",
-        "tags": "用途标签",
         "description": "描述（可选）"
       },
       "apiTypes": {
-        "openai": "OpenAI",
-        "google": "Google 翻译"
+        "openai": "OpenAI 兼容",
+        "anthropic": "Anthropic（Claude）",
+        "gemini": "Google Gemini",
+        "ollama": "Ollama（本地）"
       },
       "hints": {
-        "apiType": "当前支持兼容 OpenAI 接口规范的 API（ChatGPT、DeepSeek、硅基流动等）以及 Google 翻译。",
-        "name": "为该 API 设置一个易于识别的名称",
-        "apiKey": "输入 API 密钥或 Token",
-        "apiUrl": "输入接口地址",
-        "model": "输入模型名称",
-        "tags": "选择此 API 可提供的功能（可选）",
-        "description": "为此 API 添加备注信息"
+        "apiKey": "输入 API 密钥",
+        "apiKeyStored": "已配置——输入新值可替换",
+        "apiKeyOptional": "该协议可以不填密钥（本地或免鉴权服务）",
+        "name": "为该供应商设置一个易于识别的名称",
+        "apiType": "按服务商的接口规范选择；不确定就选「OpenAI 兼容」，它覆盖绝大多数服务",
+        "apiUrl": "填写基础地址即可，请求时会自动补全 /chat/completions",
+        "model": "输入模型名称，或点击「获取模型」从接口拉取"
       },
       "placeholders": {
         "name": "例如：DeepSeek 私有接口",
         "apiKey": "例如：sk-... 或其它密钥",
-        "apiUrl": "例如：https://api.deepseek.com/chat/completions",
+        "apiUrl": "例如：https://api.deepseek.com/v1",
         "model": "例如：deepseek-chat",
-        "description": "填写关于此 API 的备注..."
+        "description": "填写关于此供应商的备注..."
       },
       "buttons": {
-        "testTranslate": "🧪 测试翻译 API",
-        "testClassify": "🧪 测试分类 API"
+        "fetchModels": "获取模型",
+        "fetchingModels": "获取中…",
+        "testTranslate": "🧪 测试翻译",
+        "testClassify": "🧪 测试分类"
       },
       "messages": {
-        "testTranslateSuccess": "✅ 翻译 API 调用成功。{source} -> {result}",
-        "testTranslateFailure": "❌ 翻译 API 调用失败：{error}",
-        "testClassifySuccess": "✅ 分类 API 调用成功",
-        "testClassifyFailure": "❌ 分类 API 调用失败：{error}",
-        "defaultError": "请检查配置后重试。"
+        "fetchNeedUrl": "请先填写 API 地址",
+        "fetchEmpty": "该接口没有返回任何模型，请手动填写",
+        "fetchFailed": "获取模型失败：{error}",
+        "fetchSuccess": "已获取 {count} 个模型，点击即可选用",
+        "testTranslateSuccess": "✅ 翻译调用成功。{source} -> {result}",
+        "testTranslateFailure": "❌ 翻译调用失败：{error}",
+        "testClassifySuccess": "✅ 分类调用成功",
+        "testClassifyFailure": "❌ 分类调用失败：{error}"
       },
       "test": {
         "sampleText": "这是一个 GitHub 星标管理工具。",
         "sampleDescription": "用于分类测试的示例仓库。",
         "sampleGroup": "测试分组"
       },
-      "logs": {
-        "classifyResult": "分类结果："
-      },
       "errors": {
-        "nameRequired": "请输入 API 名称",
-        "delete": {}
-      }
-    },
-    "customApi": {
-      "title": {
-        "create": "添加自定义 API",
-        "edit": "编辑自定义 API"
-      },
-      "subtitle": "填写自定义 API 的配置详情",
-      "fields": {
-        "name": "名称",
-        "apiKey": "API Key",
-        "apiUrl": "API 地址"
-      },
-      "placeholders": {
-        "name": "例如：本地 Ollama",
-        "apiKey": "your-api-key",
-        "apiUrl": "https://api.example.com/v1/chat/completions"
-      },
-      "hints": {
-        "name": "给自定义 API 起一个易于识别的名称",
-        "apiKey": "输入自定义 API 的密钥",
-        "apiUrl": "使用兼容 OpenAI Chat Completions 的地址，如 http://localhost:11434/v1/chat/completions"
-      },
-      "errors": {
-        "required": "请填写必填字段（名称、API Key 和 API 地址）",
-        "invalidUrl": "请输入有效的 API 地址"
+        "nameRequired": "请输入显示名称",
+        "apiKeyRequired": "请输入 API 密钥",
+        "apiUrlRequired": "请输入 API 地址",
+        "modelRequired": "请输入模型名称",
+        "keyInvalid": "API 密钥不能包含空白字符或引号",
+        "apiTypeRequired": "请选择 API 协议"
       }
     }
   },
@@ -168,9 +153,9 @@
         "name": "用户管理",
         "description": "GitHub Token 管理"
       },
-      "api": {
-        "name": "API 管理",
-        "description": "管理 API"
+      "providers": {
+        "name": "供应商管理",
+        "description": "管理 AI 供应商"
       },
       "data": {
         "name": "数据管理",
@@ -276,53 +261,44 @@
         }
       }
     },
-    "apiManagement": {
-      "title": "API 管理",
-      "subtitle": "管理所有 API 配置并分配到功能模块",
-      "moduleConfig": {
-        "title": "模块配置",
-        "subtitle": "为每个功能模块分配 API",
-        "add": "添加 API"
-      },
-      "selectLabel": "选择 API",
-      "optionNone": "未配置",
-      "status": {
-        "enabled": "已启用",
-        "disabled": "已禁用",
-        "selectFirst": "请先选择 API"
+    "providers": {
+      "title": "供应商管理",
+      "subtitle": "配置 AI 供应商，翻译与分类会使用其中可用的供应商",
+      "add": "添加供应商",
+      "empty": "还没有任何供应商，点击右上角「添加供应商」开始配置。",
+      "defaultBadge": "默认",
+      "setDefault": "设为默认",
+      "unsetDefault": "取消默认",
+      "edit": "编辑",
+      "delete": "删除",
+      "configured": "已配置",
+      "notConfigured": "配置不完整",
+      "types": {
+        "openai": "OpenAI 兼容",
+        "anthropic": "Anthropic",
+        "gemini": "Gemini",
+        "ollama": "Ollama"
       },
       "help": {
-        "tooltip": "查看 API 使用说明",
-        "title": "API 使用说明",
+        "tooltip": "查看供应商使用说明",
+        "title": "供应商使用说明",
         "button": "我知道了",
         "steps": [
-          "1）创建 API：点击“添加 API”，填写名称、类型和凭证信息。",
-          "2）分配模块：在各模块的下拉框中选择可用 API，不兼容的选项会自动隐藏。",
-          "3）启用模块：选择 API 后再开启右侧开关即可启用该模块。",
-          "4）删除提醒：删除正在使用的 API 会使相关模块自动禁用，请提前确认。"
+          "1）添加供应商：点击「添加供应商」，从预设里挑一个（如 DeepSeek），填入 API 密钥即可。",
+          "2）补齐信息：预设没覆盖的服务，请展开「自定义设置」，选好「API 协议」后填写 API 地址与模型名称。",
+          "3）选择默认：翻译和分类默认使用第一个可用供应商，也可以手动「设为默认」。",
+          "4）检查状态：列表左侧的圆点为绿色表示可用，红色表示还缺少密钥、地址或模型。"
         ]
       },
       "dialogs": {
         "delete": {
-          "title": "删除 API",
-          "message": "确定要删除 API \"{name}\" 吗？",
-          "messageWithUsage": "确定要删除 API \"{name}\" 吗？它正在被以下模块使用：{modules}。删除后这些模块将被禁用。",
+          "title": "删除供应商",
+          "message": "确定要删除供应商 \"{name}\" 吗？",
           "confirm": "删除"
-        }
-      },
-      "listSeparator": "、",
-      "modules": {
-        "translate": {
-          "name": "翻译 API",
-          "description": "用于翻译仓库描述"
         },
-        "classify": {
-          "name": "分类 API",
-          "description": "用于 AI 分类仓库"
-        },
-        "chat": {
-          "name": "对话 API",
-          "description": "用于 AI 对话功能（预留功能）"
+        "saveError": {
+          "title": "保存失败",
+          "message": "保存供应商时出错，请重试。"
         }
       }
     },
@@ -356,8 +332,12 @@
               "desc": "包括所有已同步的仓库、标签、文件夹/分组，以及同步元数据和分组排序信息。"
             },
             "apiConfig": {
-              "title": "API 配置与模块绑定",
-              "desc": "包括所有已保存的 API 凭据与配置，以及各模块与 API 的绑定启用状态。"
+              "title": "供应商配置",
+              "desc": "包括所有已保存的供应商凭据与配置。"
+            },
+            "includeApiKeys": {
+              "title": "同时导出明文 API Key（不推荐）",
+              "desc": "备份文件将以明文保存所有 API Key，请勿分享或上传该文件。不勾选时密钥会被清空，导入后需重新填写。"
             }
           },
           "needSelect": "请至少选择一项要导出的内容。",
@@ -373,8 +353,8 @@
               "desc": "包括所有已同步的仓库、标签、文件夹/分组，以及同步元数据和分组排序信息。"
             },
             "apiConfig": {
-              "title": "API 配置与模块绑定",
-              "desc": "包括所有已保存的 API 凭据与配置，以及各模块与 API 的绑定启用状态。"
+              "title": "供应商配置",
+              "desc": "包括所有已保存的供应商凭据与配置。"
             }
           },
           "warningTitle": "⚠️ 风险提示",
@@ -581,6 +561,11 @@
             "label": "并发数",
             "placeholder": "例如：6",
             "hint": "并发越高速度越快，但成本和限流风险也更高，建议 3-8。"
+          },
+          "prompt": {
+            "label": "分类提示词模板（可选）",
+            "placeholder": "留空使用内置提示词。可用占位符：{repo_name}、{description}、{groups}",
+            "hint": "填写后会替换内置提示词；占位符 {repo_name}（仓库名）、{description}（描述）、{groups}（现有分类）会在发送前替换为实际内容。自定义提示词请务必要求 AI 只返回分类名称。"
           }
         },
         "instructions": {
@@ -852,6 +837,23 @@
         "confirm": "删除"
       },
       "removeGroup": {}
+    }
+  },
+  "ai": {
+    "errors": {
+      "unsupportedApiType": "当前供应商的协议已不受支持，请改用 OpenAI 兼容 / Anthropic / Gemini / Ollama 的供应商",
+      "missingApiKey": "请配置 API 密钥",
+      "missingApiUrl": "请配置 API 地址",
+      "missingModel": "请配置模型名称",
+      "requestFailed": "AI 请求失败，请稍后重试",
+      "emptyText": "文本不能为空",
+      "emptyRepoName": "仓库名称不能为空",
+      "noUncategorized": "没有未分类的仓库",
+      "refineLimit": "已达到最大文件夹分类次数限制（最多 {count} 次）",
+      "refineNoChange": "未生成新的层级结构，AI 可能未返回有效父级信息",
+      "batchPartial": "有 {failed}/{total} 个仓库分类失败",
+      "providerNotConfigured": "请先在「设置 → 供应商管理」中添加一个供应商",
+      "providerMissing": "所选供应商已不存在，请重新选择"
     }
   }
 }

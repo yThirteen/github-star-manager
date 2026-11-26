@@ -61,7 +61,7 @@ import { useI18n } from 'vue-i18n'
 import GroupList from '../components/GroupList.vue'
 import { useSettingsStore } from '../stores/settingsStore'
 import UserManagement from '../components/settings/UserManagement.vue'
-import APIManagement from '@/components/settings/APIManagement.vue'
+import ProviderManagement from '@/components/settings/ProviderManagement.vue'
 import DataManagement from '../components/settings/DataManagement.vue'
 import GeneralSettings from '../components/settings/GeneralSettings.vue'
 import AboutSettings from '../components/settings/AboutSettings.vue'
@@ -70,7 +70,7 @@ const settingsStore = useSettingsStore()
 const { t } = useI18n()
 
 // 设置分区类型
-type SettingSection = 'user' | 'api' | 'data' | 'general' | 'about'
+type SettingSection = 'user' | 'providers' | 'data' | 'general' | 'about'
 
 // 设置项列表
 const settingItems = computed(() => [
@@ -82,11 +82,11 @@ const settingItems = computed(() => [
     component: UserManagement,
   },
   {
-    id: 'api' as SettingSection,
-    name: t('settings.sections.api.name'),
-    description: t('settings.sections.api.description'),
-    icon: '🤖',
-    component: APIManagement,
+    id: 'providers' as SettingSection,
+    name: t('settings.sections.providers.name'),
+    description: t('settings.sections.providers.description'),
+    icon: '🔌',
+    component: ProviderManagement,
   },
   {
     id: 'data' as SettingSection,

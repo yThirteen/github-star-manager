@@ -6,6 +6,7 @@
 // 把它们拆成按需加载的独立 chunk；改成静态导入会把它们塞进主包。
 import { invoke } from '@tauri-apps/api/core'
 import type { StarData } from '../types/star'
+import type { ApiItem } from '../types/ai'
 import { useStarStore } from '../stores/starStore'
 import {
   loadStarsFromDb,
@@ -14,17 +15,14 @@ import {
   loadTagsFromDb,
   loadGroupOrderFromDb,
 } from './database'
-import {
-  createApiItem,
-  getAllApiItems,
-  getAllModuleConfigs,
-  saveModuleConfig,
-} from './aiConfig'
+import { createApiItem, getAllApiItems } from './aiConfig'
 
 // 导出选项接口
 interface ExportOptions {
   starData: boolean
   apiConfig: boolean
+  /** 是否把 API Key 明文写入备份文件（默认否：备份可能被分享或上传） */
+  includeApiKeys?: boolean
 }
 
 function isTauriAvailable(): boolean {
@@ -144,13 +142,12 @@ async function loadSelectedData(options: ExportOptions): Promise<any> {
     } else {
       // Tauri 环境：从数据库加载 API 配置
       try {
-        const [apis, configs] = await Promise.all([
-          getAllApiItems(),
-          getAllModuleConfigs(),
-        ])
+        const apis = await getAllApiItems()
         result.apiConfig = {
-          apis,
-          moduleConfigs: configs,
+          // 默认脱敏：只保留密钥以外的配置，导入后重新填写密钥即可
+          apis: options.includeApiKeys
+            ? apis
+            : apis.map((api: ApiItem) => ({ ...api, apiKey: '' })),
         }
       } catch (error) {
         console.error('加载 API 配置失败:', error)
@@ -318,18 +315,16 @@ async function performImport(data: any): Promise<void> {
   // 处理 API 配置导入（无论是否同时有星标数据）
   if (data.apiConfig && isTauriAvailable()) {
     try {
-      
-      // 导入 API 配置
+      // 导入 API 供应商配置
       if (data.apiConfig.apis && Array.isArray(data.apiConfig.apis)) {
         for (const api of data.apiConfig.apis) {
           try {
             await createApiItem({
               name: api.name,
               apiType: api.apiType,
-              apiKey: api.apiKey,
+              apiKey: api.apiKey || '',
               apiUrl: api.apiUrl,
               model: api.model,
-              tags: api.tags || [],
               description: api.description || '',
             })
           } catch (error) {
@@ -337,29 +332,6 @@ async function performImport(data: any): Promise<void> {
           }
         }
       }
-
-      // 导入模块配置
-      if (data.apiConfig.moduleConfigs && Array.isArray(data.apiConfig.moduleConfigs)) {
-        
-        // 获取已导入的 API ID 列表，用于验证外键约束
-        const importedApis = await getAllApiItems()
-        const importedApiIds = new Set(importedApis.map((api: any) => api.id))
-        
-        for (const config of data.apiConfig.moduleConfigs) {
-          try {
-            // 验证 API ID 是否存在，如果不存在则设为 null
-            const validConfig = {
-              ...config,
-              apiId: config.apiId && importedApiIds.has(config.apiId) ? config.apiId : null
-            }
-            
-            await saveModuleConfig(validConfig)
-          } catch (error) {
-            console.error('导入模块配置失败:', config.module, error)
-          }
-        }
-      }
-
     } catch (error) {
       console.error('API 配置导入失败:', error)
       // 不抛出错误，让星标数据导入继续进行

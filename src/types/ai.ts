@@ -1,73 +1,51 @@
 /**
- * API 配置相关类型定义
+ * API 供应商相关类型定义
  */
 
 /**
- * API 模块类型
+ * API 协议：决定请求怎么发、响应怎么解析。
+ * 每一种取值都必须在 src-tauri/src/commands/ai.rs 里有对应实现。
  */
-export type AIModule = 'translate' | 'classify' | 'chat'
+export type ApiType = 'openai' | 'anthropic' | 'gemini' | 'ollama'
+
+/** 一种协议的必填项 */
+export interface ApiProtocol {
+  /** 协议标识（存库值） */
+  value: ApiType
+  /** 是否必须填写 API 密钥 */
+  requiresKey: boolean
+  /** 是否必须填写 API 地址 */
+  requiresUrl: boolean
+  /** 是否必须指定模型 */
+  requiresModel: boolean
+}
 
 /**
- * API 提供商类型   当要支持新的 API 提供商时，可以在这里添加新的类型
+ * 支持的协议清单：界面上的协议下拉与必填校验都据此判断。
  */
-export type ApiType = 'openai' | 'google' 
+export const API_PROTOCOLS: ApiProtocol[] = [
+  { value: 'openai', requiresKey: true, requiresUrl: true, requiresModel: true },
+  { value: 'anthropic', requiresKey: true, requiresUrl: true, requiresModel: true },
+  { value: 'gemini', requiresKey: true, requiresUrl: true, requiresModel: true },
+  { value: 'ollama', requiresKey: false, requiresUrl: true, requiresModel: true },
+]
+
+/** 查协议定义；老数据库里可能残留已移除的取值，所以返回值可能为 undefined */
+export function getApiProtocol(apiType: string | undefined): ApiProtocol | undefined {
+  return API_PROTOCOLS.find((protocol) => protocol.value === apiType)
+}
 
 /**
- * API 配置项（所有 API 都由用户创建和管理）
+ * API 供应商（所有供应商都由用户创建和管理）
  */
 export interface ApiItem {
   id: string // 唯一标识符
-  name: string // API 名称（用户自定义）
-  apiType: ApiType // API 类型
-  apiKey?: string // API Key（某些类型可能不需要）
-  apiUrl?: string // API URL（某些类型可能不需要）
-  model?: string // 模型名称（Deepseek 的 deepseek-chat 模型等）
+  name: string // 供应商名称（用户自定义）
+  apiType: ApiType // API 协议
+  apiKey?: string // API Key（某些协议可能不需要）
+  apiUrl?: string // API URL（某些协议可能不需要）
+  model?: string // 模型名称（如 deepseek-chat、claude-3-5-sonnet-latest）
   description?: string // 描述信息
-  tags?: AIModule[] // 支持的功能标签（可多选）
   createdAt: number // 创建时间戳
   updatedAt: number // 更新时间戳
 }
-
-/**
- * AI 模块配置（每个模块关联一个 API）
- */
-export interface AIModuleConfig {
-  module: AIModule
-  apiId: string | null // 关联的 API ID，null 表示未配置
-  enabled: boolean // 是否启用该模块
-}
-
-/**
- * AI 模块信息
- */
-export interface AIModuleInfo {
-  id: AIModule
-  name: string
-  description: string
-  icon: string
-}
-
-/**
- * 预定义的 AI 模块信息
- */
-export const AI_MODULES: Record<AIModule, AIModuleInfo> = {
-  translate: {
-    id: 'translate',
-    name: '翻译 API',
-    description: '用于翻译仓库描述',
-    icon: '🌐',
-  },
-  classify: {
-    id: 'classify',
-    name: '分类 API',
-    description: '用于AI分类仓库',
-    icon: '📂',
-  },
-  chat: {
-    id: 'chat',
-    name: '对话 API',
-    description: '用于 AI 对话功能（预留功能）',
-    icon: '💬',
-  },
-}
-

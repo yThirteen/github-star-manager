@@ -8,7 +8,6 @@ import { useStarStore } from './stores/starStore'
 import { useUIStore } from './stores/uiStore'
 import { checkTokenOnStartup } from './utils/tokenCheck'
 import { createAppI18n, resolveLocale } from './plugins/i18n'
-import { initBuiltinConfigs } from './utils/builtinConfig'
 
 const isTauriEnv = typeof window !== 'undefined' && '__TAURI__' in window
 
@@ -98,11 +97,6 @@ async function bootstrapApp() {
 
   const uiStore = useUIStore()
   uiStore.initTheme()
-
-  // 初始化内置配置（如Google Translate API）
-  initBuiltinConfigs().catch((error) => {
-    console.error('内置配置初始化失败:', error)
-  })
 
   app.mount('#app')
 

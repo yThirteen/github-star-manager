@@ -50,18 +50,9 @@ pub struct ApiItem {
     pub api_key: Option<String>,
     pub api_url: Option<String>,
     pub model: Option<String>,
-    pub tags: Vec<String>,
     pub description: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AIModuleConfig {
-    pub module: String,
-    pub api_id: Option<String>,
-    pub enabled: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -203,17 +194,9 @@ pub fn init_database(app: &AppHandle) -> Result<(), String> {
             api_key TEXT,
             api_url TEXT,
             model TEXT,
-            tags TEXT,
             description TEXT,
             created_at INTEGER NOT NULL,
             updated_at INTEGER NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS ai_module_configs (
-            module TEXT PRIMARY KEY,
-            api_id TEXT,
-            enabled INTEGER NOT NULL DEFAULT 0,
-            FOREIGN KEY (api_id) REFERENCES api_items(id) ON DELETE SET NULL
         );
 
         CREATE INDEX IF NOT EXISTS idx_stars_full_name ON stars(full_name);
@@ -657,17 +640,12 @@ pub async fn load_api_items(state: State<'_, DbState>) -> Result<Vec<ApiItem>, S
     state
         .execute(|conn| {
             let mut stmt = conn.prepare(
-                "SELECT id, name, api_type, api_key, api_url, model, tags, description, created_at, updated_at 
+                "SELECT id, name, api_type, api_key, api_url, model, description, created_at, updated_at 
                  FROM api_items ORDER BY created_at DESC",
             )?;
             
             let items = stmt
                 .query_map([], |row| {
-                    let tags_json: Option<String> = row.get(6)?;
-                    let tags: Vec<String> = tags_json
-                        .and_then(|json| serde_json::from_str(&json).ok())
-                        .unwrap_or_default();
-                    
                     Ok(ApiItem {
                         id: row.get(0)?,
                         name: row.get(1)?,
@@ -675,10 +653,9 @@ pub async fn load_api_items(state: State<'_, DbState>) -> Result<Vec<ApiItem>, S
                         api_key: row.get(3)?,
                         api_url: row.get(4)?,
                         model: row.get(5)?,
-                        tags,
-                        description: row.get(7)?,
-                        created_at: row.get(8)?,
-                        updated_at: row.get(9)?,
+                        description: row.get(6)?,
+                        created_at: row.get(7)?,
+                        updated_at: row.get(8)?,
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -692,19 +669,16 @@ pub async fn load_api_items(state: State<'_, DbState>) -> Result<Vec<ApiItem>, S
 pub async fn save_api_item(api: ApiItem, state: State<'_, DbState>) -> Result<(), String> {
     state
         .execute(move |conn| {
-            let tags_json = serde_json::to_string(&api.tags).ok();
-            
             conn.execute(
                 r#"INSERT INTO api_items 
-                   (id, name, api_type, api_key, api_url, model, tags, description, created_at, updated_at)
-                   VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+                   (id, name, api_type, api_key, api_url, model, description, created_at, updated_at)
+                   VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
                    ON CONFLICT(id) DO UPDATE SET
                      name = excluded.name,
                      api_type = excluded.api_type,
                      api_key = excluded.api_key,
                      api_url = excluded.api_url,
                      model = excluded.model,
-                     tags = excluded.tags,
                      description = excluded.description,
                      created_at = excluded.created_at,
                      updated_at = excluded.updated_at
@@ -716,7 +690,6 @@ pub async fn save_api_item(api: ApiItem, state: State<'_, DbState>) -> Result<()
                     api.api_key,
                     api.api_url,
                     api.model,
-                    tags_json,
                     api.description,
                     api.created_at,
                     api.updated_at,
@@ -732,46 +705,6 @@ pub async fn delete_api_item(id: String, state: State<'_, DbState>) -> Result<()
     state
         .execute(move |conn| {
             conn.execute("DELETE FROM api_items WHERE id = ?1", [id])?;
-            Ok(())
-        })
-        .await
-}
-
-// ============================================================================
-// AI Module Configs 相关命令
-// ============================================================================
-
-#[tauri::command]
-pub async fn load_ai_module_configs(state: State<'_, DbState>,) -> Result<Vec<AIModuleConfig>, String> {
-    state
-        .execute(|conn| {
-            let mut stmt =
-                conn.prepare("SELECT module, api_id, enabled FROM ai_module_configs")?;
-            
-            let configs = stmt
-                .query_map([], |row| {
-                    Ok(AIModuleConfig {
-                        module: row.get(0)?,
-                        api_id: row.get(1)?,
-                        enabled: row.get::<_, i32>(2)? != 0,
-                    })
-                })?
-                .collect::<Result<Vec<_>, _>>()?;
-            
-            Ok(configs)
-        })
-        .await
-}
-
-#[tauri::command]
-pub async fn save_ai_module_config(config: AIModuleConfig,state: State<'_, DbState>,) -> Result<(), String> {
-    state
-        .execute(move |conn| {
-            conn.execute(
-                r#"INSERT OR REPLACE INTO ai_module_configs (module, api_id, enabled)
-                   VALUES (?1, ?2, ?3)"#,
-                rusqlite::params![config.module, config.api_id, if config.enabled { 1 } else { 0 }],
-            )?;
             Ok(())
         })
         .await
@@ -800,7 +733,6 @@ pub async fn clear_data(options: ClearOptions, state: State<'_, DbState>) -> Res
             }
 
             if api_config {
-                tx.execute("DELETE FROM ai_module_configs", [])?;
                 tx.execute("DELETE FROM api_items", [])?;
             }
 
@@ -913,4 +845,50 @@ pub async fn import_all_data(data: StarData, state: State<'_, DbState>) -> Resul
             Ok(())
         })
         .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ApiItem;
+
+    /// 前端保存供应商时传的是 camelCase、且已经没有 tags 字段，
+    /// 反序列化必须成功，否则 save_api_item 会在运行时报 missing field。
+    #[test]
+    fn api_item_accepts_frontend_payload() {
+        let payload = r#"{
+            "id": "api_1",
+            "name": "DeepSeek",
+            "apiType": "openai",
+            "apiKey": "sk-test",
+            "apiUrl": "https://api.deepseek.com/v1",
+            "model": "deepseek-chat",
+            "description": "备注",
+            "createdAt": 1730000000000,
+            "updatedAt": 1730000000000
+        }"#;
+
+        let item: ApiItem = serde_json::from_str(payload).expect("前端 payload 应能反序列化");
+        assert_eq!(item.api_type, "openai");
+        assert_eq!(item.model.as_deref(), Some("deepseek-chat"));
+        assert_eq!(item.created_at, 1730000000000);
+    }
+
+    /// 旧版本导出的文件里带着已废弃的 tags 字段，导入时应当被忽略而不是报错。
+    /// （apiType 用的是早已移除的 google 协议：老数据仍要能导入，只是列表里会标红）
+    #[test]
+    fn api_item_ignores_legacy_tags_field() {
+        let payload = r#"{
+            "id": "api_1",
+            "name": "Google Translate",
+            "apiType": "google",
+            "tags": ["translate"],
+            "createdAt": 1,
+            "updatedAt": 2
+        }"#;
+
+        let item: ApiItem = serde_json::from_str(payload).expect("旧导出文件应能导入");
+        assert_eq!(item.api_type, "google");
+        assert!(item.api_key.is_none());
+        assert!(item.api_url.is_none());
+    }
 }

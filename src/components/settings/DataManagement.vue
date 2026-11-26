@@ -112,6 +112,26 @@
               </p>
             </label>
           </div>
+
+          <div
+            v-if="exportOptions.apiConfig"
+            class="flex items-start gap-3 p-3 ml-7 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20"
+          >
+            <input
+              id="export-include-api-keys"
+              type="checkbox"
+              v-model="exportOptions.includeApiKeys"
+              class="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+            />
+            <label for="export-include-api-keys" class="flex-1 cursor-pointer">
+              <p class="font-semibold text-red-700 dark:text-red-300">
+                {{ t('settings.dataManagement.dialogs.exportSelect.options.includeApiKeys.title') }}
+              </p>
+              <p class="text-sm text-red-600 dark:text-red-400">
+                {{ t('settings.dataManagement.dialogs.exportSelect.options.includeApiKeys.desc') }}
+              </p>
+            </label>
+          </div>
         </div>
 
         <div class="flex gap-2 justify-end">
@@ -273,6 +293,8 @@ const showExportDialog = ref(false)
 const exportOptions = ref({
   starData: true,
   apiConfig: false,
+  // 默认不把 API Key 明文写进备份文件
+  includeApiKeys: false,
 })
 
 // 清空数据选择对话框状态
@@ -327,6 +349,7 @@ async function confirmExport() {
     const success = await exportData({
       starData: exportOptions.value.starData,
       apiConfig: exportOptions.value.apiConfig,
+      includeApiKeys: exportOptions.value.includeApiKeys,
     })
     if (success) {
       await showAlert({

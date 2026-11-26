@@ -3,12 +3,34 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
+import type { ApiType } from '../types/ai'
+
+/**
+ * 把任意抛出物转成可展示的文案。
+ * Tauri 对 Rust 的 `Err(String)` reject 的是字符串而不是 Error 实例，
+ * 所以这里必须先处理字符串，否则真实原因（如 401、缺少 API Key）会被丢掉。
+ */
+export function toErrorMessage(error: unknown, fallback = ''): string {
+  if (typeof error === 'string') {
+    return error.trim() || fallback
+  }
+  if (error instanceof Error) {
+    return error.message.trim() || fallback
+  }
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string') {
+      return message.trim() || fallback
+    }
+  }
+  return fallback
+}
 
 /**
  * 翻译文本
  * @param text 要翻译的文本
  * @param targetLang 目标语言代码（如 "zh" 中文, "en" 英文, "ja" 日文等）
- * @param apiType api类型（仅支持 'openai'，兼容其接口规范的实现）
+ * @param apiType api 协议（openai / anthropic / gemini / ollama）
  * @param apiKey API Key（可选）
  * @param apiUrl API URL（可选，部分提供商或自定义端点需要）
  * @param model 模型名称（可选，仅 OpenAI 需要）
@@ -34,15 +56,8 @@ export async function translateText(
     return translated
   } catch (error) {
     console.error('翻译失败:', error)
-    
-    // 提供更友好的错误信息
-    if (error instanceof Error) {
-      if (error.message.includes('Tauri') || error.message.includes('invoke')) {
-        throw new Error('翻译功能需要在 Tauri 环境中运行')
-      }
-      throw new Error(`翻译失败: ${error.message}`)
-    }
-    throw new Error('翻译失败，请稍后重试')
+    // 保留后端给出的真实原因，交给上层决定如何翻译展示
+    throw new Error(toErrorMessage(error))
   }
 }
 
@@ -51,7 +66,7 @@ export async function translateText(
  * @param repoName 仓库名称
  * @param description 仓库描述
  * @param existingGroups 现有的分组列表
- * @param apiType api类型（仅支持 'openai'，兼容其接口规范的实现）
+ * @param apiType api 协议（openai / anthropic / gemini / ollama）
  * @param apiKey API Key
  * @param apiUrl API URL（可选，用于兼容 OpenAI 接口的第三方服务）
  * @param model 模型名称（仅 OpenAI 需要）
@@ -62,7 +77,7 @@ export async function classifyRepository(
   repoName: string,
   description: string | null,
   existingGroups: string[],
-  apiType: 'openai',
+  apiType: ApiType,
   apiKey?: string,
   apiUrl?: string,
   model?: string,
@@ -83,14 +98,7 @@ export async function classifyRepository(
     return suggestedGroup
   } catch (error) {
     console.error('AI 分类失败:', error)
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Tauri') || error.message.includes('invoke')) {
-        throw new Error('AI 分类功能需要在 Tauri 环境中运行')
-      }
-      throw new Error(`AI 分类失败: ${error.message}`)
-    }
-    throw new Error('AI 分类失败，请稍后重试')
+    throw new Error(toErrorMessage(error))
   }
 }
 
@@ -101,7 +109,7 @@ export type GroupParent = {
 
 export async function classifyGroupsHierarchy(
   groups: string[],
-  apiType: 'openai',
+  apiType: ApiType,
   apiKey?: string,
   apiUrl?: string,
   model?: string
@@ -120,11 +128,30 @@ export async function classifyGroupsHierarchy(
     })
     return response
   } catch (error) {
-    console.error('批量分组层级归类失败:', error)
-    if (error instanceof Error) {
-      throw new Error(`批量分组层级归类失败: ${error.message}`)
-    }
-    throw new Error('批量分组层级归类失败，请稍后重试')
+    throw new Error(toErrorMessage(error))
+  }
+}
+
+/**
+ * 查询供应商端点当前提供的模型列表。
+ *
+ * apiType 决定请求哪一套模型接口（OpenAI `GET /models`、Anthropic `GET /v1/models`、
+ * Gemini `GET /v1beta/models`、Ollama `GET /api/tags`）；apiKey 为空时只发送匿名请求。
+ */
+export async function listProviderModels(
+  apiType: ApiType,
+  apiUrl: string,
+  apiKey?: string
+): Promise<string[]> {
+  try {
+    const response = await invoke<string[]>('list_provider_models', {
+      apiType,
+      apiUrl: apiUrl.trim(),
+      apiKey: apiKey?.trim() || null,
+    })
+    return response
+  } catch (error) {
+    throw new Error(toErrorMessage(error))
   }
 }
 

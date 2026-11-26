@@ -6,7 +6,6 @@
     "save": "Save",
     "close": "Close",
     "create": "Create",
-    "edit": "Edit",
     "delete": "Delete",
     "dontAskAgain": "Don't ask again",
     "open": "Open"
@@ -47,96 +46,82 @@
     }
   },
   "status": {
+    "loading": "Loading...",
     "testing": "Testing...",
-    "saving": "Saving...",
     "exporting": "Exporting...",
     "importing": "Importing...",
     "clearing": "Clearing..."
   },
   "modals": {
-    "apiItem": {
+    "provider": {
       "title": {
-        "create": "Add API",
-        "edit": "Edit API"
+        "create": "Add provider",
+        "edit": "Edit provider"
       },
-      "subtitle": "Configure the API details",
+      "subtitle": "Fill in the endpoint details — only the API key is normally required",
+      "presetLabel": "Provider",
+      "presetPlaceholder": "Choose a provider",
+      "sections": {
+        "advanced": "Custom settings"
+      },
       "fields": {
-        "apiType": "API Type",
-        "apiName": "API Name",
-        "apiKey": "API Key",
-        "apiUrl": "API URL",
+        "apiKey": "API key",
+        "name": "Display name",
+        "apiType": "API protocol",
+        "apiUrl": "API base URL",
         "model": "Model",
-        "tags": "Usage tags",
         "description": "Description (optional)"
       },
       "apiTypes": {
-        "openai": "OpenAI",
-        "google": "Google Translate"
+        "openai": "OpenAI compatible",
+        "anthropic": "Anthropic (Claude)",
+        "gemini": "Google Gemini",
+        "ollama": "Ollama (local)"
       },
       "hints": {
-        "apiType": "Currently supports APIs following the OpenAI interface (ChatGPT, DeepSeek, SiliconFlow) and Google Translate.",
-        "name": "Give this API a recognizable name",
-        "apiKey": "Enter the API key or token",
-        "apiUrl": "Enter the endpoint URL",
-        "model": "Enter the model name",
-        "tags": "Select the features this API can power (optional)",
-        "description": "Add notes about this API"
+        "apiKey": "Enter the API key",
+        "apiKeyStored": "Configured — enter a new value to replace it",
+        "apiKeyOptional": "No API key needed for this protocol (local or keyless services)",
+        "name": "Give this provider a recognisable name",
+        "apiType": "Match the protocol your provider speaks; \"OpenAI compatible\" covers most services",
+        "apiUrl": "A base URL is enough; /chat/completions is appended automatically",
+        "model": "Type a model name, or use “Fetch models” to list them from the endpoint"
       },
       "placeholders": {
-        "name": "e.g. My DeepSeek API",
-        "apiKey": "e.g. sk-... or another API key",
-        "apiUrl": "e.g. https://api.deepseek.com/chat/completions",
+        "name": "e.g. DeepSeek private endpoint",
+        "apiKey": "e.g. sk-... or another secret",
+        "apiUrl": "e.g. https://api.deepseek.com/v1",
         "model": "e.g. deepseek-chat",
-        "description": "Add any notes about this API..."
+        "description": "Notes about this provider..."
       },
       "buttons": {
-        "testTranslate": "🧪 Test translation API",
-        "testClassify": "🧪 Test classification API"
+        "fetchModels": "Fetch models",
+        "fetchingModels": "Fetching…",
+        "testTranslate": "🧪 Test translation",
+        "testClassify": "🧪 Test classification"
       },
       "messages": {
-        "testTranslateSuccess": "✅ Translation API call succeeded. {source} -> {result}",
-        "testTranslateFailure": "❌ Translation API call failed: {error}",
-        "testClassifySuccess": "✅ Classification API call succeeded",
-        "testClassifyFailure": "❌ Classification API call failed: {error}",
-        "defaultError": "Please check the configuration and try again."
+        "fetchNeedUrl": "Enter the API base URL first",
+        "fetchEmpty": "The endpoint returned no models — type one manually",
+        "fetchFailed": "Failed to fetch models: {error}",
+        "fetchSuccess": "{count} models fetched — click one to use it",
+        "testTranslateSuccess": "✅ Translation works. {source} -> {result}",
+        "testTranslateFailure": "❌ Translation failed: {error}",
+        "testClassifySuccess": "✅ Classification works",
+        "testClassifyFailure": "❌ Classification failed: {error}"
       },
       "test": {
-        "sampleText": "This is a GitHub star management tool.",
-        "sampleDescription": "A sample repository used for testing classification.",
+        "sampleText": "This is a GitHub star manager.",
+        "sampleDescription": "A sample repository used for classification testing.",
         "sampleGroup": "Test group"
       },
-      "logs": {
-        "classifyResult": "Classification result:"
-      },
       "errors": {
-        "nameRequired": "Please enter an API name",
-        "delete": {}
-      }
-    },
-    "customApi": {
-      "title": {
-        "create": "Add custom API",
-        "edit": "Edit custom API"
-      },
-      "subtitle": "Enter the configuration details for your custom API",
-      "fields": {
-        "name": "Name",
-        "apiKey": "API Key",
-        "apiUrl": "API URL"
-      },
-      "placeholders": {
-        "name": "e.g. Ollama local model",
-        "apiKey": "your-api-key",
-        "apiUrl": "https://api.example.com/v1/chat/completions"
-      },
-      "hints": {
-        "name": "Give this custom API a recognizable name",
-        "apiKey": "Enter your custom API key",
-        "apiUrl": "Use an endpoint compatible with OpenAI Chat Completions, e.g. http://localhost:11434/v1/chat/completions"
-      },
-      "errors": {
-        "required": "Please fill out the required fields (name, API key, and API URL)",
-        "invalidUrl": "Enter a valid API URL"
+        "nameRequired": "Enter a display name",
+        "apiKeyRequired": "Enter the API key",
+        "apiUrlRequired": "Enter the API base URL",
+        "modelRequired": "Enter a model name",
+        "keyInvalid": "The API key cannot contain whitespace or quotes",
+        "apiTypeRequired": "Select an API protocol"
       }
     }
   },
@@ -168,9 +153,9 @@
         "name": "User Management",
         "description": "GitHub token settings"
       },
-      "api": {
-        "name": "API Management",
-        "description": "Manage AI APIs"
+      "providers": {
+        "name": "Providers",
+        "description": "Manage AI providers"
       },
       "data": {
         "name": "Data Management",
@@ -276,53 +261,44 @@
         }
       }
     },
-    "apiManagement": {
-      "title": "API Management",
-      "subtitle": "Manage all API configs and assign them to modules",
-      "moduleConfig": {
-        "title": "Module configuration",
-        "subtitle": "Assign an API to each feature module",
-        "add": "Add API"
-      },
-      "selectLabel": "Select API",
-      "optionNone": "Not configured",
-      "status": {
-        "enabled": "Enabled",
-        "disabled": "Disabled",
-        "selectFirst": "Please select an API first"
+    "providers": {
+      "title": "Providers",
+      "subtitle": "Configure AI providers; translation and classification use the available ones",
+      "add": "Add provider",
+      "empty": "No providers yet — use “Add provider” in the top right to get started.",
+      "defaultBadge": "Default",
+      "setDefault": "Set as default",
+      "unsetDefault": "Clear default",
+      "edit": "Edit",
+      "delete": "Delete",
+      "configured": "Configured",
+      "notConfigured": "Incomplete",
+      "types": {
+        "openai": "OpenAI compatible",
+        "anthropic": "Anthropic",
+        "gemini": "Gemini",
+        "ollama": "Ollama"
       },
       "help": {
-        "tooltip": "View API usage guide",
-        "title": "API usage guide",
+        "tooltip": "How providers work",
+        "title": "How providers work",
         "button": "Got it",
         "steps": [
-          "1) Create API: click Add API, then fill in name, type, and credentials.",
-          "2) Assign modules: choose a compatible API in each module dropdown; incompatible options are hidden automatically.",
-          "3) Enable modules: after choosing an API, toggle the switch to enable the module.",
-          "4) Deletion warning: removing an API in use will disable the related modules."
+          "1) Add a provider: click “Add provider”, pick a preset (e.g. DeepSeek) and paste your API key.",
+          "2) Complete the details: for services without a preset, expand “Custom settings”, choose the API protocol, then fill in the API URL and model.",
+          "3) Pick a default: translation and classification use the first usable provider, or set one manually with “Set as default”.",
+          "4) Check the status: the dot on the left is green when usable and red when the key, URL or model is missing."
         ]
       },
       "dialogs": {
         "delete": {
-          "title": "Delete API",
-          "message": "Delete the API \"{name}\"?",
-          "messageWithUsage": "Delete the API \"{name}\"? It is used by: {modules}. Deleting will disable those modules.",
+          "title": "Delete provider",
+          "message": "Delete the provider \"{name}\"?",
           "confirm": "Delete"
-        }
-      },
-      "listSeparator": ", ",
-      "modules": {
-        "translate": {
-          "name": "Translation API",
-          "description": "Used to translate repository descriptions"
         },
-        "classify": {
-          "name": "Classification API",
-          "description": "Used to classify repositories with AI"
-        },
-        "chat": {
-          "name": "Chat API",
-          "description": "Reserved for AI chat features"
+        "saveError": {
+          "title": "Save failed",
+          "message": "Saving the provider failed. Please try again."
         }
       }
     },
@@ -356,8 +332,12 @@
               "desc": "Includes all synced repositories, tags, folders/groups, sync metadata, and group ordering."
             },
             "apiConfig": {
-              "title": "API credentials and module bindings",
-              "desc": "Includes all saved API credentials/configs and module-to-API bindings with enable states."
+              "title": "Provider configuration",
+              "desc": "Includes every saved provider credential and setting."
+            },
+            "includeApiKeys": {
+              "title": "Also export plaintext API keys (not recommended)",
+              "desc": "The backup file will contain every API key in plaintext—do not share or upload it. When unchecked, keys are cleared and must be re-entered after import."
             }
           },
           "needSelect": "Please select at least one item to export.",
@@ -373,8 +353,8 @@
               "desc": "Includes all synced repositories, tags, folders/groups, sync metadata, and group ordering."
             },
             "apiConfig": {
-              "title": "API credentials and module bindings",
-              "desc": "Includes all saved API credentials/configs and module-to-API bindings with enable states."
+              "title": "Provider configuration",
+              "desc": "Includes every saved provider credential and setting."
             }
           },
           "warningTitle": "Risk warning",
@@ -581,6 +561,11 @@
             "label": "Concurrency",
             "placeholder": "e.g. 6",
             "hint": "Higher concurrency is faster but increases cost and rate-limit risk. Recommended 3-8."
+          },
+          "prompt": {
+            "label": "Classification prompt template (optional)",
+            "placeholder": "Leave empty to use the built-in prompt. Placeholders: {repo_name}, {description}, {groups}",
+            "hint": "Replaces the built-in prompt. The placeholders {repo_name}, {description}, and {groups} are substituted before sending. Make sure your prompt tells the AI to answer with the group name only."
           }
         },
         "instructions": {
@@ -852,6 +837,23 @@
         "confirm": "Delete"
       },
       "removeGroup": {}
+    }
+  },
+  "ai": {
+    "errors": {
+      "unsupportedApiType": "This provider uses an unsupported protocol; add an OpenAI-compatible, Anthropic, Gemini or Ollama provider instead",
+      "missingApiKey": "Configure the API key",
+      "missingApiUrl": "Configure the API base URL",
+      "missingModel": "Configure the model name",
+      "requestFailed": "The AI request failed. Please try again later",
+      "emptyText": "Text cannot be empty",
+      "emptyRepoName": "Repository name cannot be empty",
+      "noUncategorized": "There are no uncategorized repositories",
+      "refineLimit": "Reached the maximum number of folder classification rounds (at most {count})",
+      "refineNoChange": "No new hierarchy was produced—the AI may not have returned valid parent information",
+      "batchPartial": "{failed}/{total} repositories failed to classify",
+      "providerNotConfigured": "Add a provider under Settings → Providers first",
+      "providerMissing": "The selected provider no longer exists"
     }
   }
 }

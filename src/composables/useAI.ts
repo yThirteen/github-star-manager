@@ -9,12 +9,26 @@ import {
   translateText,
   classifyRepository,
   classifyGroupsHierarchy,
+  toErrorMessage,
   type GroupParent,
   type LanguageName,
   LANGUAGE_CODES,
 } from '../utils/ai'
-import { getModuleConfig, getApiItemById } from '../utils/aiConfig'
+import { resolveProvider, AiConfigError } from '../utils/aiConfig'
+import { translate as t } from '../plugins/i18n'
+import type { ApiItem } from '../types/ai'
 import type { StarItem } from '../types/star'
+
+/**
+ * 把任意错误转成可直接展示的文案：
+ * 配置类错误按错误码查当前语言的文案，请求类错误保留后端给出的真实原因。
+ */
+function describeError(error: unknown): string {
+  if (error instanceof AiConfigError) {
+    return t(`ai.errors.${error.code}`)
+  }
+  return toErrorMessage(error) || t('ai.errors.requestFailed')
+}
 
 export function useAI() {
   const starStore = useStarStore()
@@ -33,6 +47,8 @@ export function useAI() {
 
   // 文件夹分类次数控制：最多进行 (maxFolderDepth - 1) 次
   const refineAttempts = ref(0)
+  // 上一次「继续分类」是否因为达到次数上限而被拒绝
+  const refineLimitReached = ref(false)
   const maxRefineRounds = computed(() => {
     const depth = starStore.maxFolderDepth ?? 3
     return Math.max(0, depth - 1)
@@ -46,7 +62,7 @@ export function useAI() {
     targetLang: LanguageName | string = '中文'
   ): Promise<string | null> {
     if (!text || !text.trim()) {
-      translationError.value = '文本不能为空'
+      translationError.value = t('ai.errors.emptyText')
       return null
     }
 
@@ -63,15 +79,7 @@ export function useAI() {
           ? LANGUAGE_CODES[targetLang as LanguageName]
           : targetLang
 
-      const moduleConfig = await getModuleConfig('translate')
-      if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
-        throw new Error('请先在设置中配置并启用翻译 API')
-      }
-
-      const api = await getApiItemById(moduleConfig.apiId)
-      if (!api) {
-        throw new Error('API 配置不存在')
-      }
+      const api = await resolveProvider()
 
       const result = await translateText(
         text,
@@ -89,8 +97,7 @@ export function useAI() {
       translatedText.value = result
       return result
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : '翻译失败，请稍后重试'
+      const errorMessage = describeError(error)
       // 若已被取消或开启了新任务，忽略错误提示
       if (myVersion === translationVersion.value) {
         translationError.value = errorMessage
@@ -142,7 +149,7 @@ export function useAI() {
     existingGroups: string[]
   ): Promise<string | null> {
     if (!star.name) {
-      classificationError.value = '仓库名称不能为空'
+      classificationError.value = t('ai.errors.emptyRepoName')
       return null
     }
 
@@ -150,26 +157,7 @@ export function useAI() {
     classificationError.value = null
 
     try {
-      const moduleConfig = await getModuleConfig('classify')
-      if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
-        throw new Error('请先在设置中配置并启用分类 API')
-      }
-
-      const api = await getApiItemById(moduleConfig.apiId)
-      if (!api) {
-        throw new Error('API 配置不存在')
-      }
-
-      if (api.apiType !== 'openai') {
-        throw new Error('分类 API 仅支持符合 OpenAI 接口规范的实现')
-      }
-
-
-      if (!api.apiKey) {
-        throw new Error('请配置 API Key')
-      }
-
-      // 对于兼容 OpenAI 接口的第三方服务，可通过配置 apiUrl 实现；不强制要求
+      const api = await resolveProvider()
 
       const suggestedGroup = await classifyRepository(
         star.name,
@@ -182,9 +170,7 @@ export function useAI() {
       )
       return suggestedGroup
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : '分类失败，请稍后重试'
-      classificationError.value = errorMessage
+      classificationError.value = describeError(error)
       console.error('分类错误:', error)
       return null
     } finally {
@@ -198,7 +184,7 @@ export function useAI() {
   async function _classifyStarsBatch(
     stars: StarItem[],
     candidateGroups: string[],
-    api: any,
+    api: ApiItem,
     onProgress?: (completed: number, total: number) => void,
     concurrency?: number,
     promptOverride?: string
@@ -210,6 +196,8 @@ export function useAI() {
     const results = new Map<string, string>()
     let completed = 0
     let nextIndex = 0
+    let failedCount = 0
+    let firstFailure: unknown = null
     const total = stars.length
 
     const runTask = async (index: number) => {
@@ -237,6 +225,11 @@ export function useAI() {
           results.set(star.id, normalizeGroupName(suggestedGroup))
         }
       } catch (error) {
+        // 记录失败，避免整批静默失败后界面只看到「分类完成但结果为空」
+        failedCount += 1
+        if (firstFailure === null) {
+          firstFailure = error
+        }
         console.error(`分类仓库 ${star.name} 失败:`, error)
       } finally {
         completed += 1
@@ -261,6 +254,14 @@ export function useAI() {
     const workerCount = Math.min(MAX_CONCURRENCY, total)
     await Promise.all(Array.from({ length: workerCount }, () => worker()))
 
+    if (failedCount > 0 && !isCancelling.value) {
+      const reason = describeError(firstFailure)
+      classificationError.value =
+        failedCount === total
+          ? reason
+          : `${t('ai.errors.batchPartial', { failed: failedCount, total })}：${reason}`
+    }
+
     return results
   }
 
@@ -284,7 +285,7 @@ export function useAI() {
     )
 
     if (uncategorizedStars.length === 0) {
-      classificationError.value = '没有未分类的仓库'
+      classificationError.value = t('ai.errors.noUncategorized')
       return new Map()
     }
 
@@ -296,15 +297,7 @@ export function useAI() {
     refineAttempts.value = 0
 
     try {
-      const moduleConfig = await getModuleConfig('classify')
-      if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
-        throw new Error('请先在设置中配置并启用分类 API')
-      }
-
-      const api = await getApiItemById(moduleConfig.apiId)
-      if (!api) {
-        throw new Error('API 配置不存在')
-      }
+      const api = await resolveProvider()
 
       const candidateGroups = options?.forceCandidateGroups ?? existingGroups
       const settings = useSettingsStore()
@@ -333,8 +326,7 @@ export function useAI() {
         return new Map()
       }
 
-      const errorMessage =
-        error instanceof Error ? error.message : '批量分类失败，请稍后重试'
+      const errorMessage = describeError(error)
       classificationError.value = errorMessage
       console.error('批量分类错误:', error)
       return new Map()
@@ -354,10 +346,12 @@ export function useAI() {
   ): Promise<Map<string, string>> {
     // 若已达最大分类次数，则直接返回原结果
     if (refineAttempts.value >= maxRefineRounds.value) {
-      classificationError.value = `已达到最大文件夹分类次数限制（最多 ${maxRefineRounds.value} 次）`
+      refineLimitReached.value = true
+      classificationError.value = t('ai.errors.refineLimit', { count: maxRefineRounds.value })
       return new Map(currentAssignments)
     }
 
+    refineLimitReached.value = false
     // 计数 +1（本次分类尝试）
     refineAttempts.value += 1
     const normalizeGroupName = (name: string) =>
@@ -383,17 +377,7 @@ export function useAI() {
     isCancelling.value = false
 
     try {
-      const moduleConfig = await getModuleConfig('classify')
-      if (!moduleConfig || !moduleConfig.apiId || !moduleConfig.enabled) {
-        throw new Error('请先在设置中配置并启用分类 API')
-      }
-      const api = await getApiItemById(moduleConfig.apiId)
-      if (!api) throw new Error('API 配置不存在')
-
-      if (api.apiType !== 'openai') {
-        throw new Error('分类 API 仅支持符合 OpenAI 接口规范的实现')
-      }
-
+      const api = await resolveProvider()
 
       if (isCancelling.value) {
         throw new Error('CLASSIFICATION_CANCELLED')
@@ -406,9 +390,6 @@ export function useAI() {
         api.apiUrl,
         api.model
       )
-
-      // 调试：记录 AI 返回的层级结果
-      console.debug('AI hierarchy raw result', hierarchy)
 
       if (isCancelling.value) {
         throw new Error('CLASSIFICATION_CANCELLED')
@@ -440,8 +421,7 @@ export function useAI() {
       })
 
       if (groupParentMap.size === 0 || !changed) {
-        classificationError.value = '未生成新的层级结构，AI 可能未返回有效父级信息'
-        console.debug('AI hierarchy debug - no changes applied', { hierarchy, groupParentMap })
+        classificationError.value = t('ai.errors.refineNoChange')
         return new Map(currentAssignments)
       }
 
@@ -451,8 +431,7 @@ export function useAI() {
         classificationError.value = null
         return new Map(currentAssignments)
       }
-      const errorMessage = error instanceof Error ? error.message : '优化分类失败'
-      classificationError.value = errorMessage
+      classificationError.value = describeError(error)
       console.error('优化分类错误:', error)
       return new Map()
     } finally {
@@ -486,6 +465,7 @@ export function useAI() {
     isCancelling: computed(() => isCancelling.value),
     refineAttempts: computed(() => refineAttempts.value),
     maxRefineRounds,
+    refineLimitReached: computed(() => refineLimitReached.value),
     translate,
     translateToAppLanguage,
     clearTranslation,
