@@ -9,16 +9,16 @@ importers:
   .:
     dependencies:
       '@tauri-apps/api':
-        specifier: ^2.9.0
+        specifier: ~2.9.0
         version: 2.9.0
       '@tauri-apps/plugin-dialog':
-        specifier: ^2.4.2
+        specifier: ~2.4.2
         version: 2.4.2
       '@tauri-apps/plugin-fs':
-        specifier: ^2.0.0
+        specifier: ~2.4.4
         version: 2.4.4
       '@tauri-apps/plugin-shell':
-        specifier: ^2.0.0
+        specifier: ~2.3.3
         version: 2.3.3
       date-fns:
         specifier: ^3.6.0
@@ -40,7 +40,7 @@ importers:
         version: 4.6.3(vue@3.5.22(typescript@5.9.3))
     devDependencies:
       '@tauri-apps/cli':
-        specifier: ^2.9.6
+        specifier: ~2.9.6
         version: 2.9.6
       '@types/node':
         specifier: ^20.14.10
